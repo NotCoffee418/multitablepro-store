@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: night
- * Date: 2019/02/17
- * Time: 21:53
- */
 
-class Users extends CI_Model
-{
+class Users extends CI_Model {
 	public function register($email, $plain_pass, $first_name, $last_name) {
 		// all validation should have already been run in controller
 
