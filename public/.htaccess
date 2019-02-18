@@ -1,9 +1,11 @@
-DirectoryIndex index.php
 RewriteEngine on
-# Allow requests for valid file or folder names, or some that should be
+
+# Allow requests for valid file or folder names
 RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d [OR]
-RewriteCond $1 ^(robots\.txt|favicon\.ico|style\.css)
+RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^(.*)$ - [L]
+
 # use index.php as front controller ...
-RewriteRule ^(.*)$ https://%{HTTP_HOST}/index.php?/$1 [L,QSA]
+RewriteCond $1 !^(index.php)
+RewriteRule ^(.*)$ ./index.php?$1 [L,QSA]
+
