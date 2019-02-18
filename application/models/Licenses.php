@@ -25,7 +25,7 @@ class Licenses extends CI_Model {
 
 	// Returns license or null
 	public function find_license($key) {
-		$r = $this->db->query("SELECT * FROM licenses WHERE license_key = ?", array($key))->result();
-		return count($r) == 0 ? null : $r[0];
+		$r = $this->db->get_where("licenses", array("license_key" => $key))->result();
+		return $r == null ? null : $r[0];
 	}
 }
