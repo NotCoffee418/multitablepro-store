@@ -20,6 +20,12 @@ class Home extends CI_Controller {
 	 */
 	public function index()
 	{
-		$this->load->view('home');
+
+
+		// load front-end header hier
+		$this->load->view('shared/header'); // loads main content
+		$this->load->view('home'); // loads main content
+		$this->load->view('shared/footer'); // loads main content
+		// load front-end footer hier
 	}
 }

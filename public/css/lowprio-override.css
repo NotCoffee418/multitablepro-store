@@ -1,0 +1,5 @@
+/* Handle conflicts between jQuery & bootstrap modal */
+.modal {
+	height: auto !important;
+	overflow: initial !important;
+}
