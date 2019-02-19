@@ -1,12 +1,12 @@
-// Buttons and clicks
-
-
-/* redundant for now
-$(".download-link-btn").click(function(){
-	openUrl("/download");
-});
-
-function openUrl(url) {
-	window.location.href = url;
-}
-*/
+// EU cookie law
+window.addEventListener("load", function(){
+	window.cookieconsent.initialise({
+		"palette": {
+			"popup": {
+				"background": "#000"
+			},
+			"button": {
+				"background": "#f1d600"
+			}
+		}
+	})});

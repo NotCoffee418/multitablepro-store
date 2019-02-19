@@ -70,6 +70,10 @@ class User extends CI_Controller {
 			return;
 		}
 
+		// Load captcha
+		$this->load->model("Recaptcha");
+		$reCaptcha = $this->Recaptcha->get_recaptcha_html("user/login", "modal-login-form");
+
 		// validate form
 		$this->load->library('form_validation');
 		$this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|is_unique[users.email]|max_length[128]');
@@ -88,8 +92,7 @@ class User extends CI_Controller {
 			redirect($url);
 		}
 		else { // form had errors or is fresh
-			$this->load->model('Recaptcha');
-			$data["recaptcha"] = $this->Recaptcha->get_recaptcha_html("user/login");
+			$data["recaptcha_html"] = $this->Recaptcha->get_recaptcha_html("user/login");
 
 			// Load views
 			$this->load->view('shared/header', $data);
