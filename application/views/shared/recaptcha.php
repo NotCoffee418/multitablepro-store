@@ -8,8 +8,13 @@
 		// Make captcha request
 		grecaptcha.ready(function() {
 			grecaptcha.execute('<?php echo $recaptcha_public; ?>', {action: '<?php echo $action; ?>'}).then(function(token) {
-				document.getElementById('g-recaptcha-response').value = token;
-				document.getElementById('submit').removeAttribute('disabled'); // Enable buttons
+				<?php if (isset($specifySubId)): // Use to look for a captcha within a certain ID (eg. modal) ?>
+					var sub = document.getElementById('<?php echo $specifySubId; ?>');
+				<?php else: ?>
+					var sub = document;
+				<?php endif; ?>
+				sub.querySelector('[id=g-recaptcha-response]').value = token;
+				sub.querySelector('[id=submit]').removeAttribute('disabled'); // Enable buttons
 			});
 		});
 	});

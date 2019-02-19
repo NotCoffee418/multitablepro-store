@@ -9,7 +9,7 @@
 		echo '<div class="alert alert-danger">' . validation_errors() . '</div>';
 
 	// create our form
-	echo form_open('user/login');
+	echo form_open('user/login', array('id' => 'modal-login-form'));
 	?>
 	<div class="form-group">
 		<label for="email">Email address</label>

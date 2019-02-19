@@ -21,8 +21,9 @@ class Recaptcha extends CI_Model {
 
 	// Since it's quite an odd situation, use this to get the HTML, pass it in $data to a form
 	// Place it near the end of your form
-	public function get_recaptcha_html($action) {
+	public function get_recaptcha_html($action, $specifySubId = null) {
 		$data = array(
+			"specifySubId" => $specifySubId,
 			"recaptcha_public" => $this->config->item("recaptcha_public"),
 			"action" => $action
 		);

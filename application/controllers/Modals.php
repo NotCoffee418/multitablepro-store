@@ -8,7 +8,7 @@ class Modals extends CI_Controller {
 
 		// Load captcha
 		$this->load->model("Recaptcha");
-		$reCaptcha = $this->Recaptcha->get_recaptcha_html("user/login");
+		$reCaptcha = $this->Recaptcha->get_recaptcha_html("user/login", "modal-login-form");
 
 		// Load view
 		$this->load->view('modals/login', array('recaptcha_html' => $reCaptcha));
