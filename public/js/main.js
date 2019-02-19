@@ -1,3 +1,4 @@
+/* --- ON LOAD --- */
 // EU cookie law
 window.addEventListener("load", function(){
 	window.cookieconsent.initialise({
@@ -10,3 +11,13 @@ window.addEventListener("load", function(){
 			}
 		}
 	})});
+
+
+
+/* --- FUNCTIONS --- */
+// copy value of input to clipboard from input's id
+function copyInputToClipboard(inputId) {
+	$('#'+inputId).focus();
+	$('#'+inputId).select();
+	document.execCommand('copy');
+}

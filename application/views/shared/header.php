@@ -49,10 +49,15 @@
 		</ul>
 		<div class="dropdown-divider"></div>
 		<div class="nav navbar-nav pull-md-right">
+
+			<ul class="nav navbar-nav mr-auto">
 			<?php if (isset($user)): ?>
-				<div class="nav nav-item">
-					<span class="navbar-text">Hello, <?php echo $user->first_name; ?>!</span>
-				</div>
+				<li class="nav nav-item">
+					<a class="nav-link disabled" href="#">Hello, <?php echo $user->first_name; ?>!</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="/user">My Licenses</a>
+				</li>
 				<li class="nav-item">
 					<a class="nav-link" href="/user/logout">Log out</a>
 				</li>
@@ -64,6 +69,7 @@
 					<a class="btn btn-outline-info" role="button" href="/download">Try for free!</a>
 				</li>
 			<?php endif; ?>
+			</ul>
 		</div>
 	</div>
 </nav>

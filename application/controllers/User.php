@@ -9,9 +9,13 @@ class User extends CI_Controller {
 			return;
 		}
 
+		// Load models
+		$this->load->model("Licenses");
+
 		// Prepare $data
 		$data["page_title"] = "User Control Panel";
 		$data["user"] = $this->Users->get_current_user();
+		$data["productLicenses"] = $this->Licenses->get_user_product_licenses($data["user"]->id);
 
 		// Load views
 		$this->load->view('shared/header', $data);
