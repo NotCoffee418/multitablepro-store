@@ -63,6 +63,41 @@ class User extends CI_Controller {
 		}
 	}
 
+	public function login() {
+		// already logged in
+		if ($this->Users->get_current_user() != null) {
+			redirect('/user');
+			return;
+		}
+
+		// validate form
+		$this->load->library('form_validation');
+		$this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|is_unique[users.email]|max_length[128]');
+		$this->form_validation->set_rules('password', 'Password', 'required|min_length[5]|max_length[64]');
+		$this->form_validation->set_rules('action', 'Captcha', 'callback_valid_captcha');
+		$this->form_validation->set_rules('email', 'Login', 'callback_valid_login'); // callback handles login
+
+		// login is valid
+		if ($this->form_validation->run() === true) {
+			// Determine where to redirect to
+			$url = $this->input->post('redirect');
+			if ($url == null || strpos($url, '/user'))
+				$url = '/user';
+
+			// Redirect
+			redirect($url);
+		}
+		else { // form had errors or is fresh
+			$this->load->model('Recaptcha');
+			$data["recaptcha"] = $this->Recaptcha->get_recaptcha_html("user/login");
+
+			// Load views
+			$this->load->view('shared/header', $data);
+			$this->load->view('user/login', $data);
+			$this->load->view('shared/footer', $data);
+		}
+	}
+
 	function valid_captcha($action) {
 		$this->load->model('Recaptcha');
 		$r = $this->Recaptcha->validate($action);
@@ -70,6 +105,19 @@ class User extends CI_Controller {
 			return true;
 		else {
 			$this->form_validation->set_message('valid_captcha', 'ReCaptcha Error: ' . $r);
+			return false;
+		}
+	}
+
+	function valid_login($irrelevant) {
+		$user = $this->Users->login(
+			$this->input->post('email'),
+			$this->input->post('password')
+		);
+		if ($user !== null)
+			return true;
+		else {
+			$this->form_validation->set_message('valid_login', 'Could not log in with the specified email or password.');
 			return false;
 		}
 	}

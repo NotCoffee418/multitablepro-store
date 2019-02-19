@@ -43,6 +43,11 @@
 
 		?>
 	</div>
+	<input type='hidden' id='redirect' name='redirect' />
+	<script>
+		// Return to this page when logged in
+		$('#redirect').val(window.location.href);
+	</script>
 	<?php
 		echo $recaptcha_html;
 

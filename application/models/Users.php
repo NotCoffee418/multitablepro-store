@@ -48,7 +48,6 @@ class Users extends CI_Model {
 
 	// returns null if not logged in
 	public function get_current_user() {
-		$this->session->has_userdata("user") ?
-			$this->session->userdata("user") : null;
+		return $this->session->userdata("user");
 	}
 }

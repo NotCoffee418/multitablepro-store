@@ -28,7 +28,7 @@
 	</button>
 
 	<div class="collapse navbar-collapse" id="navbarsExampleDefault">
-		<ul class="navbar-nav mr-auto">
+		<ul class="nav navbar-nav mr-auto">
 			<li class="nav-item active">
 				<a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
 			</li>
@@ -47,10 +47,21 @@
 				</div>
 			</li>
 		</ul>
-		<form class="form-inline my-2 my-lg-0">
-			<a class="btn btn-outline-light" role="button" rel="modal:open" href="/modals/login">Customer Portal</a>
-			<a class="btn btn-outline-info" role="button" href="/download">Try for free!</a>
-		</form>
+		<div class="dropdown-divider"></div>
+		<div class="nav navbar-nav pull-md-right">
+			<?php if (isset($user)): ?>
+				<div class="nav nav-item">
+					<span class="navbar-text">Hello, <?php echo $user->first_name; ?>!</span>
+				</div>
+			<?php else: ?>
+				<li class="nav-item">
+					<a class="btn btn-outline-light" role="button" rel="modal:open" href="/modals/login">Customer Portal</a>
+				</li>
+				<li class="nav-item">
+					<a class="btn btn-outline-info" role="button" href="/download">Try for free!</a>
+				</li>
+			<?php endif; ?>
+		</div>
 	</div>
 </nav>
 
