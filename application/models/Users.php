@@ -46,9 +46,9 @@ class Users extends CI_Model {
 		return $r == null ? null : $r[0];
 	}
 
-	// returns false if not logged in
+	// returns null if not logged in
 	public function get_current_user() {
 		$this->session->has_userdata("user") ?
-			$this->session->userdata("user") : false;
+			$this->session->userdata("user") : null;
 	}
 }
