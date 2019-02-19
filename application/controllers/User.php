@@ -98,6 +98,12 @@ class User extends CI_Controller {
 		}
 	}
 
+	public function logout() {
+		if ($this->session->has_userdata("user"))
+			$this->session->set_userdata(array("user" => null));
+		redirect('/', 'refresh');
+	}
+
 	function valid_captcha($action) {
 		$this->load->model('Recaptcha');
 		$r = $this->Recaptcha->validate($action);

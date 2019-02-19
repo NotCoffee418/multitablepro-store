@@ -53,6 +53,9 @@
 				<div class="nav nav-item">
 					<span class="navbar-text">Hello, <?php echo $user->first_name; ?>!</span>
 				</div>
+				<li class="nav-item">
+					<a class="nav-link" href="/user/logout">Log out</a>
+				</li>
 			<?php else: ?>
 				<li class="nav-item">
 					<a class="btn btn-outline-light" role="button" rel="modal:open" href="/modals/login">Customer Portal</a>
