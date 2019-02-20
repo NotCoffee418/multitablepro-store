@@ -50,4 +50,31 @@ class Users extends CI_Model {
 	public function get_current_user() {
 		return $this->session->userdata("user");
 	}
+
+	public function get_user_role($userId = null) {
+		// Determine userId, return 0 if quest
+		if ($userId == null) {
+			$user = $this->get_current_user();
+			if ($user == null)
+				return 0; // not logged in, rank 0
+			else $userId = $user->id;
+		}
+
+		// get user's role
+		$r = $this->db->get_where("users", array('id' => $userId))->result();
+		return count($r) > 0 ? $r[0]->role : 0;
+	}
+
+	public function has_vip_permission($userId = null) {
+		return $this->get_user_role($userId) >= 2;
+	}
+	public function has_support_permission($userId = null) {
+		return $this->get_user_role($userId) >= 3;
+	}
+	public function has_developer_permission($userId = null) {
+		return $this->get_user_role($userId) >= 4;
+	}
+	public function has_admin_permission($userId = null) {
+		return $this->get_user_role($userId) >= 5;
+	}
 }
