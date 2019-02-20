@@ -55,3 +55,6 @@ $route['translate_uri_dashes'] = FALSE;
 
 // modals
 $route['modals/(:any)'] = "modals/$1";
+
+// Store
+$route['store/(:any)'] = "store/view_product_group/$1";

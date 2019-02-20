@@ -16,7 +16,10 @@
 			<tbody>
 				<?php foreach ($productLicenses as $prLic): ?>
 				<tr>
-					<td><?php echo $prLic->product_name; ?></td>
+					<td>
+						<?php echo $prLic->product_name; ?>
+						<small class="form-text text-muted"><?php echo $prLic->product_description; ?></small>
+					</td>
 					<td>
 						<div class="input-group">
 							<input type="text" id="license-key-<?php echo $prLic->license_id; ?>" class="form-control" readonly value="<?php echo $prLic->license_key; ?>">
