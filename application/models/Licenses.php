@@ -31,8 +31,8 @@ class Licenses extends CI_Model {
 		return $r == null ? null : $r[0];
 	}
 
-	// Returns licenses for display - userid null returns ALL licenses
-	public function get_user_product_licenses($userid = null, $include_expired = false) {
+	// Returns licenses for display - userId null returns ALL licenses
+	public function get_user_product_licenses($userId = null, $include_expired = false) {
 		// get data
 		$this->db->select("licenses.id as license_id");
 		$this->db->select("licenses.license_key as license_key");
@@ -43,8 +43,8 @@ class Licenses extends CI_Model {
 		$this->db->select("products.description as product_description");
 		$this->db->from("licenses");
 		$this->db->join("products", 'products.id = licenses.product');
-		if ($userid != null)
-			$this->db->where("licenses.owner_user", $userid);
+		if ($userId != null)
+			$this->db->where("licenses.owner_user", $userId);
 
 		// handle expired filtering
 		if (!$include_expired)

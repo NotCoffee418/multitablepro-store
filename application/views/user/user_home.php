@@ -34,4 +34,37 @@
 		</table>
 	</div>
 	<?php endif; ?>
+
+	<h2>Purchase History</h2>
+	<?php if (count($purchaseHistory) == 0): ?>
+		<p class="text-justify">You have no purchase history.</p>
+	<?php else: ?>
+		<div class="table-responsive">
+			<table class="table">
+				<thead>
+				<tr>
+					<td>Product</td>
+					<td>Price</td>
+					<td>Date</td>
+				</tr>
+				</thead>
+				<tbody>
+				<?php foreach ($purchaseHistory as $purch): ?>
+					<tr>
+						<td><?php
+							if ($purch->purchase_type == "UPGRADE")
+								echo "Upgrade to ";
+							else if ($purch->purchase_type == "RENEW")
+								echo "Renew ";
+							echo $purch->product_name;
+							?>
+						</td>
+						<td><?php echo '$'.number_format($purch->price_paid, 2); ?></td>
+						<td><?php echo $purch->time_purchased; ?></td>
+					</tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
+		</div>
+	<?php endif; ?>
 </div>
