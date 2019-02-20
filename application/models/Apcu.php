@@ -12,8 +12,8 @@ class Apcu extends CI_Model {
 		else return null;
 	}
 
-	public function set($key, $value, $ttl = null) {
-		if ($this->config->item('apcu_enabled')) {
+	public function set($key, $value, $ttl = null, $storeNull = false) {
+		if ($this->config->item('apcu_enabled') && ($value !== null || $storeNull)) {
 			if ($ttl == null)
 				$ttl = $this->config->item('apcu_ttl');
 			apcu_store($this->config->item('apcu_site_prefix') .$key, $value, $ttl);
