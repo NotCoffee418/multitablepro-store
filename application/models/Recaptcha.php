@@ -24,7 +24,7 @@ class Recaptcha extends CI_Model {
 	public function get_recaptcha_html($action, $specifySubId = null) {
 		$data = array(
 			"specifySubId" => $specifySubId,
-			"recaptcha_public" => $this->config->item("recaptcha_public"),
+			"recaptcha_public" => $this->SiteSettings->get("recaptcha_public"),
 			"action" => $action
 		);
 		return $this->load->view('shared/recaptcha', $data, true);
@@ -39,7 +39,7 @@ class Recaptcha extends CI_Model {
 		// Validate captcha
 		try {
 			$verifyResponse = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret='.
-				$this->config->item("recaptcha_private").'&response='.$this->input->post('g-recaptcha-response'));
+				$this->SiteSettings->get("recaptcha_private").'&response='.$this->input->post('g-recaptcha-response'));
 			$responseData = json_decode($verifyResponse);
 			return $responseData->success == true && $responseData->action == $action ?
 				true : "(".join($responseData->{'error-codes'}).")";

@@ -63,6 +63,7 @@ class User extends CI_Controller {
 			// Prepare captcha
 			$this->load->model('Recaptcha');
 			$data["recaptcha"] = $this->Recaptcha->get_recaptcha_html("user/register");
+			$data["page_title"] = "Register";
 
 			// Load views
 			$this->load->view('shared/header', $data);
@@ -101,6 +102,7 @@ class User extends CI_Controller {
 		}
 		else { // form had errors or is fresh
 			$data["recaptcha_html"] = $this->Recaptcha->get_recaptcha_html("user/login");
+			$data["page_title"] = "Login";
 
 			// Load views
 			$this->load->view('shared/header', $data);

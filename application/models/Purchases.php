@@ -27,9 +27,26 @@ class Purchases extends CI_Model {
 		return $r;
 	}
 
-	public function create_purchase() {
+	// Validation should happen in controller
+	public function create_purchase($userId, $productId, $purchase_type = 'BUY', $payment_method = 'FREE', $payment_reference = null) {
 		// Clear user's related cache
-		//$this->Apcu->delete('get_user_product_purchases-'.$userId);
-		//$this->Apcu->delete('get_user_product_licenses-'.$userId);
+		$this->Apcu->delete('get_user_product_purchases-'.$userId);
+		$this->Apcu->delete('get_user_product_licenses-'.$userId);
+
+		// Determine price paid based on current product price
+		$price_paid = ($this->db->get_where('products', array('id' => $productId))->result())[0];
+
+		// Insert to database
+		$data = array(
+			'user' => $userId,
+			'product' => $productId,
+			'price_paid' => $price_paid,
+			'purchase_type' => $purchase_type,
+			'payment_method' => $payment_method,
+			'payment_reference' => $payment_reference
+		);
+		$this->db->insert('purchases', $data);
+
+		// todo: Send email relative to $purchase_type
 	}
 }

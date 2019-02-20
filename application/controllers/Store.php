@@ -17,6 +17,7 @@ class Store extends CI_Controller {
 
 		// Data for views
 		$data["page_title"] = $productGroup->full_name . " - Store";
+		$data['user'] = $this->Users->get_current_user();
 		if (isset($productGroups[0]->full_name))
 			$data["page_description"] = $productGroup->seo_description;
 		$data["group_name"] = $productGroup->full_name;

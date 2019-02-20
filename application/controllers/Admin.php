@@ -9,6 +9,7 @@ class Admin extends CI_Controller {
 		}
 
 		// Set data
+		$data['user'] = $this->Users->get_current_user();
 		$data["has_permission"] = true; // In case views become accessible in the future
 		$data["page_title"] = "Admin Panel";
 

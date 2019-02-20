@@ -137,5 +137,6 @@ $autoload['language'] = array();
 */
 $autoload['model'] = array(
 	"Users",
-	"Apcu"
+	"Apcu",
+	"SiteSettings"
 );

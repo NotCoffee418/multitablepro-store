@@ -20,7 +20,7 @@ class Home extends CI_Controller {
 	 */
 	public function index()
 	{
-		$data['user'] = $this->session->userdata("user");
+		$data['user'] = $this->Users->get_current_user();
 		$this->load->view('shared/header', $data);
 		$this->load->view('home');
 		$this->load->view('shared/footer');
