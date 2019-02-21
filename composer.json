@@ -6,10 +6,10 @@
 	"license": "MIT",
 	"require": {
 		"php": ">=5.3.7",
-                "codeigniter/framework": "~3.1"
+		"codeigniter/framework": "~3.1",
+		"paypal/rest-api-sdk-php": "*"
 	},
 	"require-dev": {
-		"mikey179/vfsStream": "1.1.*",
 		"phpunit/phpunit": "4.* || 5.*"
 	},
 	"suggest": {
