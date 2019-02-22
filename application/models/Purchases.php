@@ -32,7 +32,7 @@ class Purchases extends CI_Model {
 	// Validation should happen in controller
 	public function create_purchase($userId, $productId, $purchase_type = 'BUY', $payment_method = 'FREE', $payment_reference = null) {
 		// Determine price paid based on current product price
-		$price_paid = ($this->db->get_where('products', array('id' => $productId))->result())[0];
+		$price_paid = ($this->db->get_where('products', array('id' => $productId))->result())[0]->price;
 
 		// Create row in purchases table
 		$purchasesData = array(
@@ -55,8 +55,10 @@ class Purchases extends CI_Model {
 			$this->db->from('purchases');
 			$this->db->where('user', $userId);
 			$this->db->where('product', $productId);
+			$this->db->like('price_paid', $price_paid); // floats need like
 			$this->db->where('purchase_type', $purchase_type);
-			$purchaseId = ($this->db->get()->result())[0]->id;
+			$r = $this->db->get()->result();
+			$purchaseId = $r[0]->id;
 
 			// Insert the row
 			$twoCharPrefix = $payment_method == 'PAYPAL' ? 'PP' : 'UK'; // paypal or unknown for now
@@ -82,7 +84,14 @@ class Purchases extends CI_Model {
 			for ($i = 0; $i < $length; $i++) {
 				$token .= $tokens[rand(0, 35)];
 			}
-		} while (count($this->db->get_where('purchase_tokens', array('token' => $token))) > 0); // try again if token already exists somehow
+
+			// Check if token already exists
+			$this->db->select('*');
+			$this->db->from('purchase_tokens');
+			$this->db->where('complete_token', $token);
+			$this->db->or_where('cancel_token', $token);
+			$foundTokens = count($this->db->get()->result());
+		} while ($foundTokens > 0); // try again if token already exists somehow
 		return $token;
 	}
 
@@ -100,7 +109,7 @@ class Purchases extends CI_Model {
 			'id' => $ptr[0]->purchase,
 			'is_complete' => false,
 		);
-		$r = $this->db->get_where('purchases', $data);
+		$r = $this->db->get_where('purchases', $data)->result();
 		if (count($r) == 0) { // this really shouldn't happen
 			// todo: log this
 			show_error("Purchase for the given token does not exist. Please contact support with this error.", 500);
@@ -119,6 +128,11 @@ class Purchases extends CI_Model {
 		$tokenType = $is_complete ? 'complete_token' : 'cancel_token';
 		$purchase = $this->find_incomplete_purchase_by_token($token, $tokenType);
 
+		if ($purchase == null) { // invalid token entered
+			show_404();
+			return;
+		}
+
 		// remove token
 		$this->db->delete('purchase_tokens', array($tokenType => $token));
 
@@ -126,7 +140,19 @@ class Purchases extends CI_Model {
 			// generate license key or change it's properties
 			$new_purchase_type = $this->Licenses->set_user_license(
 				$purchase->user, $purchase->product, $purchase->purchase_type);
+
+			// Mark the order as complete
+			$this->db->set('is_complete', true);
+			$this->db->where('id', $purchase->id);
+			$this->db->update('purchases');
+
+			// handle changed order type
 			if ($new_purchase_type != $purchase->purchase_type) {
+				// Update database with new purchase type
+				$this->db->set('purchase_type', $new_purchase_type);
+				$this->db->where('id', $purchase->id);
+				$this->db->update('purchases');
+
 				//todo: log this
 			}
 			// todo: log purchase complete

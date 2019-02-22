@@ -97,7 +97,7 @@ class Licenses extends CI_Model {
 		}
 
 		// BUY or requested UPGRADE/RENEW but no active license was found - create new license
-		if ($action == 'BUY' || count($fUserLicenseProduct)) { //
+		if ($action == 'BUY' || count($fUserLicenseProduct) == 0) { //
 			if ($action != 'BUY') {
 				// todo: log this tried to !BUY but no license found, buying instead
 			}
@@ -107,7 +107,7 @@ class Licenses extends CI_Model {
 			$this->db->select('product_groups.license_prefix as license_prefix');
 			$this->db->from('products');
 			$this->db->join('product_groups', 'product_groups.id = products.product_group');
-			$this->db->where('product.id', $productId);
+			$this->db->where('products.id', $productId);
 			$newLicenseInfo = $this->db->get()->result();
 
 			// Generate new license key with correct prefix
@@ -115,7 +115,7 @@ class Licenses extends CI_Model {
 
 			// Set issue date & expiration date
 			$issueTimestamp = time();
-			$expireTimestamp = $issueTimestamp + ($newLicenseInfo[0]->duration_days);
+			$expireTimestamp = $issueTimestamp + ($newLicenseInfo[0]->duration_days * 86400);
 
 			// Insert the license key
 			$insertData = array(
@@ -125,7 +125,7 @@ class Licenses extends CI_Model {
 				'issued_at' => date("Y-m-d H:i:s", $issueTimestamp),
 				'expires_at' => date("Y-m-d H:i:s", $expireTimestamp),
 			);
-			$this->db->insert_batch('licenses', $insertData);
+			$this->db->insert('licenses', $insertData);
 			// todo: log this
 		}
 
@@ -139,7 +139,7 @@ class Licenses extends CI_Model {
 		// RENEW - Change expires_at
 		// Upgrade also renews
 		if ($action == 'RENEW' || $action == 'UPGRADE') {
-			if ($fUserLicenseProduct->expires_at == null) {
+			if ($fUserLicenseProduct[0]->expires_at == null) {
 				show_error("Attempting to renew a product that doesn't expire on it or buy a product you already have.", 500);
 				return; // todo: write these in a log
 			}
@@ -150,7 +150,7 @@ class Licenses extends CI_Model {
 
 			// Save new expiration date
 			$this->db->set('expires_at', date("Y-m-d H:i:s", $newExpirationTimestamp));
-			$this->db->where('license_id',$fUserLicenseProduct[0]->license_id);
+			$this->db->where('id', $fUserLicenseProduct[0]->license_id);
 			$this->db->update('licenses');
 		}
 
