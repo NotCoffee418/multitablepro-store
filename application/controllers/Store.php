@@ -30,4 +30,16 @@ class Store extends CI_Controller {
 			$this->load->view('store/'.$shortName.'-extra', $data);
 		$this->load->view('shared/footer');
 	}
+
+	public function complete_purchase($purchaseToken) {
+		// mark purchase as complete
+		$this->load->model('Purchases');
+		$this->Purchases->finish_purchase($purchaseToken, true);
+	}
+
+	public function cancel_purchase($purchaseToken) {
+		// not sure when this gets called but, remove the purchase from DB
+		$this->load->model('Purchases');
+		$this->Purchases->finish_purchase($purchaseToken, false);
+	}
 }
