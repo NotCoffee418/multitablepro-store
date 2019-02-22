@@ -34,8 +34,8 @@ class Purchases extends CI_Model {
 		// Determine price paid based on current product price
 		$price_paid = ($this->db->get_where('products', array('id' => $productId))->result())[0];
 
-		// Insert to database
-		$data = array(
+		// Create row in purchases table
+		$purchasesData = array(
 			'user' => $userId,
 			'product' => $productId,
 			'price_paid' => $price_paid,
@@ -43,9 +43,33 @@ class Purchases extends CI_Model {
 			'payment_method' => $payment_method,
 			'payment_reference' => $payment_reference
 		);
-		$this->db->insert('purchases', $data);
+		if ($payment_method == 'FREE')
+			$purchasesData['is_complete'] = true;
+		$this->db->insert('purchases', $purchasesData);
+		// todo: log this
 
-		// todo: Send email relative to $purchase_type
+		// Create row in purchase_tokens table if needed
+		if ($payment_method != 'FREE') {
+			// Find the id of the purchase we created
+			$this->db->select_max('id');
+			$this->db->from('purchases');
+			$this->db->where('user', $userId);
+			$this->db->where('product', $productId);
+			$this->db->where('purchase_type', $purchase_type);
+			$purchaseId = ($this->db->get()->result())[0]->id;
+
+			// Insert the row
+			$twoCharPrefix = $payment_method == 'PAYPAL' ? 'PP' : 'UK'; // paypal or unknown for now
+			$complete_token = $this->generate_purchase_token($twoCharPrefix);
+			$cancel_token = $this->generate_purchase_token($twoCharPrefix);
+			$purchaseTokensData = array(
+				'purchase' => $purchaseId,
+				'complete_token' => $complete_token,
+				'cancel_token' => $cancel_token,
+			);
+			$this->db->insert('purchase_tokens', $purchaseTokensData);
+			// todo: log this
+		}
 	}
 
 	// generates a purchase token to ID the callback
@@ -64,10 +88,10 @@ class Purchases extends CI_Model {
 
 	// using the purchase_tokens table - find a purchases row
 	// $token - input token
-	// $token_type - must be 'cancel' or 'complete'
-	public function find_incomplete_purchase_by_token($token) {
+	// $token_type - must be 'complete_token' or 'cancel_token'
+	public function find_incomplete_purchase_by_token($token, $token_type) {
 		// Grab the purchase_tokens row
-		$ptr = $this->db->get_where('purchase_tokens', array('token' => $token))->result();
+		$ptr = $this->db->get_where('purchase_tokens', array($token_type => $token))->result();
 		if (count($ptr) == 0)
 			return null; // invalid token, do nothing
 
@@ -92,10 +116,11 @@ class Purchases extends CI_Model {
 		$this->load->model('Licenses');
 
 		// get the purchase
-		$purchase = $this->find_incomplete_purchase_by_token($token);
+		$tokenType = $is_complete ? 'complete_token' : 'cancel_token';
+		$purchase = $this->find_incomplete_purchase_by_token($token, $tokenType);
 
 		// remove token
-		$this->db->delete('purchase_tokens', array('token' => $token));
+		$this->db->delete('purchase_tokens', array($tokenType => $token));
 
 		if ($is_complete) {
 			// generate license key or change it's properties
