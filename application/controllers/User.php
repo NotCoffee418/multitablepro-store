@@ -27,7 +27,7 @@ class User extends CI_Controller {
 		$this->load->view('shared/footer', $data);
 	}
 
-	public function register() {
+	public function register($returnUrlEncoded = '') {
 		// already logged in
 		if ($this->Users->get_current_user() != null) {
 			redirect('/user', 'refresh');
@@ -57,13 +57,23 @@ class User extends CI_Controller {
 			// log in & redirect
 			if ($user != null)
 				$this->Users->create_user_session($user);
-			redirect('/user', 'refresh');
+
+
+			// Determine where to redirect to
+			$redirectUrl = $this->input->post('redirect_url');
+			if ($redirectUrl == null || $redirectUrl == '')
+				$redirectUrl = '/user';
+			redirect($redirectUrl, 'refresh');
 		}
 		else { // Form had errors or is fresh
 			// Prepare captcha
 			$this->load->model('Recaptcha');
 			$data["recaptcha"] = $this->Recaptcha->get_recaptcha_html("user/register");
 			$data["page_title"] = "Register";
+			if ($returnUrlEncoded != '') {
+				$data['redirect_url'] = $this->Users->base64_url_decode($returnUrlEncoded);
+				$data['redirect_url_encoded'] = $returnUrlEncoded;
+			}
 
 			// Load views
 			$this->load->view('shared/header', $data);
@@ -72,7 +82,7 @@ class User extends CI_Controller {
 		}
 	}
 
-	public function login() {
+	public function login($returnUrlEncoded = '') {
 		// already logged in
 		if ($this->Users->get_current_user() != null) {
 			redirect('/user');
@@ -93,16 +103,20 @@ class User extends CI_Controller {
 		// login is valid
 		if ($this->form_validation->run() === true) {
 			// Determine where to redirect to
-			$url = $this->input->post('redirect');
-			if ($url == null || strpos($url, '/user'))
-				$url = '/user';
+			$redirectUrl = $this->input->post('redirect_url');
+			if ($redirectUrl == null || $redirectUrl == '')
+				$redirectUrl = '/user';
 
 			// Redirect
-			redirect($url);
+			redirect($redirectUrl);
 		}
 		else { // form had errors or is fresh
 			$data["recaptcha_html"] = $this->Recaptcha->get_recaptcha_html("user/login");
 			$data["page_title"] = "Login";
+			if ($returnUrlEncoded != '') {
+				$data['redirect_url'] = $this->Users->base64_url_decode($returnUrlEncoded);
+				$data['redirect_url_encoded'] = $returnUrlEncoded;
+			}
 
 			// Load views
 			$this->load->view('shared/header', $data);

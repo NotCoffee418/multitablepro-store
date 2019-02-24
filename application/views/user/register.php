@@ -95,6 +95,12 @@
 	// Captcha HTML
 	echo $recaptcha;
 
+	// Add redirect url
+	if (isset($redirect_url))
+		echo form_hidden('redirect_url', $redirect_url);
+	else if (set_value('redirect_url') != '')
+		echo form_hidden('redirect_url', set_value('redirect_url'));
+
 	// Submit button
 	$data = array(
 		'id' => 'submit',

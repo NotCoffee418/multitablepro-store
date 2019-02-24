@@ -45,7 +45,19 @@
 	</div>
 
 	<?php
+		// Add recaptcha
 		echo $recaptcha_html;
+
+		// Add redirect url
+		if (isset($redirect_url)) {
+			echo form_hidden('redirect_url', $redirect_url);
+			$registerUrlAppend = '/'.$redirect_url_encoded;
+		}
+		else if (set_value('redirect_url') != '') {
+			echo form_hidden('redirect_url', set_value('redirect_url'));
+			$registerUrlAppend = '/'.$this->Users->base64_url_encode(set_value('redirect_url')); // todo: clean this
+		}
+		else $registerUrlAppend = '';
 
 		// Submit button
 		$data = array(
@@ -59,5 +71,5 @@
 
 	<hr class="divider">
 	<h4>Don't have an account yet?</h4>
-	<a type="button" class="btn btn-success" href="/user/register">Create an account</a>
+	<a type="button" class="btn btn-success" href="/user/register<?php echo $registerUrlAppend; ?>">Create an account</a>
 </div>

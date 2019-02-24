@@ -77,4 +77,18 @@ class Users extends CI_Model {
 	public function has_admin_permission($userId = null) {
 		return $this->get_user_role($userId) >= 5;
 	}
+
+	// Used to pass a return url on login or register
+	function base64_url_encode($input) {
+		return strtr(base64_encode($input), '+/=', '._-');
+	}
+	function base64_url_decode($input) {
+		$url = base64_decode(strtr($input, '._-', '+/='));
+
+		// Confirm that url is a url
+		// Prevents user being able to edit the visible display of site by inserting html
+		if (filter_var($url, FILTER_VALIDATE_URL) === FALSE)
+			return null;
+		else return $url;
+	}
 }
