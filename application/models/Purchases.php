@@ -32,7 +32,7 @@ class Purchases extends CI_Model {
 	// Validation should happen in controller
 	public function create_purchase($userId, $productId, $purchase_type = 'BUY', $payment_method = 'FREE', $payment_reference = null) {
 		// Determine price paid based on current product price
-		$price_paid = ($this->db->get_where('products', array('id' => $productId))->result())[0]->price;
+		$price_paid = $this->db->get_where('products', array('id' => $productId))->row()->price;
 
 		// Create row in purchases table
 		$purchasesData = array(
@@ -56,7 +56,7 @@ class Purchases extends CI_Model {
 		$this->db->like('price_paid', $price_paid); // floats need like
 		$this->db->where('purchase_type', $purchase_type);
 		$this->db->order_by('id', 'desc');
-		$result['purchase'] = ($this->db->get()->result())[0];
+		$result['purchase'] = $this->db->get()->row();
 		$purchaseId = $result['purchase']->id;
 
 		// Create row in purchase_tokens table if needed
@@ -77,7 +77,7 @@ class Purchases extends CI_Model {
 			$this->db->select('*');
 			$this->db->from('purchase_tokens');
 			$this->db->where('purchase', $purchaseId);
-			$result['purchase_tokens'] = ($this->db->get()->result())[0];
+			$result['purchase_tokens'] = $this->db->get()->row();
 		}
 
 		return $result;
@@ -99,7 +99,7 @@ class Purchases extends CI_Model {
 			$this->db->from('purchase_tokens');
 			$this->db->where('complete_token', $token);
 			$this->db->or_where('cancel_token', $token);
-			$foundTokens = count($this->db->get()->result());
+			$foundTokens = $this->db->get()->num_rows();
 		} while ($foundTokens > 0); // try again if token already exists somehow
 		return $token;
 	}
@@ -109,22 +109,22 @@ class Purchases extends CI_Model {
 	// $token_type - must be 'complete_token' or 'cancel_token'
 	public function find_incomplete_purchase_by_token($token, $token_type) {
 		// Grab the purchase_tokens row
-		$ptr = $this->db->get_where('purchase_tokens', array($token_type => $token))->result();
-		if (count($ptr) == 0)
+		$ptr = $this->db->get_where('purchase_tokens', array($token_type => $token))->row();
+		if ($ptr == null)
 			return null; // invalid token, do nothing
 
 		// Grab the purchases row
-		$data = array(
-			'id' => $ptr[0]->purchase,
+		$where = array(
+			'id' => $ptr->purchase,
 			'is_complete' => false,
 		);
-		$r = $this->db->get_where('purchases', $data)->result();
-		if (count($r) == 0) { // this really shouldn't happen
+		$pur = $this->db->get_where('purchases', $where)->row();
+		if ($pur == null) { // this really shouldn't happen
 			// todo: log this
 			show_error("Purchase for the given token does not exist. Please contact support with this error.", 500);
 			return null;
 		}
-		else return $r[0];
+		else return $pur;
 	}
 
 	// should be called when purchase is complete or cancelled

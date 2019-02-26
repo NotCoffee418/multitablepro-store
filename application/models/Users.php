@@ -42,8 +42,7 @@ class Users extends CI_Model {
 	}
 
 	public function by_email($email) {
-		$r = $this->db->get_where("users", array("email" => $email), 1)->result();
-		return $r == null ? null : $r[0];
+		return $this->db->get_where("users", array("email" => $email), 1)->row();
 	}
 
 	// returns null if not logged in
@@ -61,8 +60,8 @@ class Users extends CI_Model {
 		}
 
 		// get user's role
-		$r = $this->db->get_where("users", array('id' => $userId))->result();
-		return count($r) > 0 ? $r[0]->role : 0;
+		$r = $this->db->get_where("users", array('id' => $userId));
+		return $r->num_rows() == 0 ? 0 : $r->row()->role;
 	}
 
 	public function has_vip_permission($userId = null) {

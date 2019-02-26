@@ -18,7 +18,7 @@ class Store extends CI_Controller {
 		// Data for views
 		$data["page_title"] = $productGroup->full_name . " - Store";
 		$data['user'] = $this->Users->get_current_user();
-		if (isset($productGroups[0]->full_name))
+		if (isset($productGroup->full_name))
 			$data["page_description"] = $productGroup->seo_description;
 		$data["group_name"] = $productGroup->full_name;
 		$data["products"] = $this->Products->products_in_group($productGroup->id);
@@ -37,12 +37,14 @@ class Store extends CI_Controller {
 	public function request_purchase() {
 		$this->load->model(array(
 			'Purchases',
-			'Products'
+			'Products',
+			'Licenses'
 		));
 
-		// Get product and product group
+		// Get product, product group and current user
 		$productIdInput = str_replace('product_', '', $this->input->post('product'));
 		$pInfo = $this->Products->product_and_group_by_id($productIdInput);
+		$currentUser = $this->Users->get_current_user();
 
 		// -- Invalid requests
 		// Check for invalid input. This shouldn't happen, simply redirect to product page
@@ -50,23 +52,31 @@ class Store extends CI_Controller {
 		$this->form_validation->set_rules('payment_method', 'Payment Method', 'callback_valid_payment_method');
 		$this->form_validation->set_rules('product', 'Product', 'callback_valid_product');
 		if ($this->form_validation->run() === false) {
-			show_error('No valid product was selected. Go back and try again.');
+			echo validation_errors();
 			//redirect('/store/'.$pInfo['product_group']->short_name);
 			return;
 		}
 
 		// User must be logged in to proceed
-		if ($this->Users->get_current_user() == null) {
+		if ($currentUser == null) {
 			$returnUrlEncoded = $this->Users->base64_url_encode(base_url().'store/'.$pInfo['product_group']->short_name);
 			show_error('Must be logged in to purchase a product.');
 			redirect('/user/login/'.$returnUrlEncoded);
 			return;
 		}
 
+		// User cannot buy a product within the same group
+		if ($this->Licenses->user_owns_different_license_in_product_group($pInfo['product']->id, $currentUser->id)) {
+			show_error("You cannot buy a license for a different product in a product group for which you already own a license.<br>" .
+				"Upgrade or renew your license in the Customer Portal instead.<br>" .
+				"If you wish to buy multiple licenses, create additional accounts or contact support for a bulk order.");
+			return;
+		}
+
 		// -- Valid requests
 		// Create the purchase & purchase tokens
 		$purInfo = $this->Purchases->create_purchase(
-			$this->Users->get_current_user()->id,
+			$currentUser->id,
 			$pInfo['product']->id,
 			'BUY',
 			$this->input->post('payment_method')
@@ -79,11 +89,9 @@ class Store extends CI_Controller {
 				$this->load->model('Paypal');
 				$payment = $this->Paypal->create_buy_order($pInfo['product'], $purInfo['purchase_tokens']);
 				$redirectUrl = $payment->getApprovalLink();
+				redirect($redirectUrl, 'refresh');
 				break;
 		}
-
-		// Redirect to payment processor
-		redirect($redirectUrl, 'refresh');
 	}
 
 	// Called paypal at /cancel_purchase or /complete_purchase/token - see routes
@@ -104,7 +112,7 @@ class Store extends CI_Controller {
 		$allowedPaymentMethods = array(
 			'PAYPAL',
 		);
-		$this->form_validation->set_message('valid_product', 'Invalid payment method selected.');
+		$this->form_validation->set_message('payment_method', 'Invalid payment method selected.');
 		return in_array($input, $allowedPaymentMethods);
 	}
 	function valid_product($input) {
@@ -113,7 +121,7 @@ class Store extends CI_Controller {
 		$productId = str_replace('product_', '', $input);
 		if (!$this->Products->purchasing_allowed($productId)) {
 			// Can occur when user messes with html, cache was not cleared after making a product un-public or no radiobox was checked
-			$this->form_validation->set_message('valid_product', 'No valid product was selected or product is no longer available for purchase.');
+			$this->form_validation->set_message('product', 'No valid product was selected or product is no longer available for purchase.');
 			return false;
 		}
 		// Additional checks can go here (eg. upgradables)

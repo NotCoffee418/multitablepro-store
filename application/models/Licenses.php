@@ -27,8 +27,7 @@ class Licenses extends CI_Model {
 
 	// Returns license or null
 	public function find_license($key) {
-		$r = $this->db->get_where("licenses", array("license_key" => $key))->result();
-		return $r == null ? null : $r[0];
+		return $this->db->get_where("licenses", array("license_key" => $key))->row();
 	}
 
 	// Returns licenses for display - userId null returns ALL licenses
@@ -69,8 +68,8 @@ class Licenses extends CI_Model {
 	// $action - 'BUY', 'RENEW' or 'UPGRADE'
 	public function set_user_license($userId, $productId, $action) {
 		// Get product row
-		$targetProducts = $this->db->get_where('products', array('id' => $productId))->result();
-		if (count($targetProducts) == 0) {
+		$targetProduct = $this->db->get_where('products', array('id' => $productId))->row();
+		if ($targetProduct == null) {
 			show_error("Requested product does not exist.", 500);
 			return;
 		}
@@ -89,16 +88,17 @@ class Licenses extends CI_Model {
 		$this->db->where('licenses.owner_user', 1);
 		$this->db->where('licenses.product', 3);
 		$this->db->where('licenses.expires_at IS NULL OR expires_at > NOW()');
-		$fUserLicenseProduct = $this->db->get()->result();
+		$fUserLicenseProduct = $this->db->get()->row();
 
 		// Change buy to renew if user already has a license in the same product_group
-		if ($action == 'BUY' && count($fUserLicenseProduct) > 0) {
+		if ($action == 'BUY' && $fUserLicenseProduct != null) {
 			$action = 'RENEW';
 		}
 
 		// BUY or requested UPGRADE/RENEW but no active license was found - create new license
-		if ($action == 'BUY' || count($fUserLicenseProduct) == 0) { //
+		if ($action == 'BUY' || $fUserLicenseProduct == null) { //
 			if ($action != 'BUY') {
+				$action = 'BUY';
 				// todo: log this tried to !BUY but no license found, buying instead
 			}
 
@@ -108,14 +108,14 @@ class Licenses extends CI_Model {
 			$this->db->from('products');
 			$this->db->join('product_groups', 'product_groups.id = products.product_group');
 			$this->db->where('products.id', $productId);
-			$newLicenseInfo = $this->db->get()->result();
+			$newLicenseInfo = $this->db->get()->row();
 
 			// Generate new license key with correct prefix
-			$license_key  = $this->generate_new_key($newLicenseInfo[0]->license_prefix);
+			$license_key = $this->generate_new_key($newLicenseInfo->license_prefix);
 
 			// Set issue date & expiration date
 			$issueTimestamp = time();
-			$expireTimestamp = $issueTimestamp + ($newLicenseInfo[0]->duration_days * 86400);
+			$expireTimestamp = $issueTimestamp + ($newLicenseInfo->duration_days * 86400);
 
 			// Insert the license key
 			$insertData = array(
@@ -132,25 +132,25 @@ class Licenses extends CI_Model {
 		// UPGRADE - Change product
 		if ($action == 'UPGRADE') {
 			$this->db->set('product', $productId);
-			$this->db->where('license_id',$fUserLicenseProduct[0]->license_id);
+			$this->db->where('license_id',$fUserLicenseProduct->license_id);
 			$this->db->update('licenses');
 		}
 
 		// RENEW - Change expires_at
 		// Upgrade also renews
 		if ($action == 'RENEW' || $action == 'UPGRADE') {
-			if ($fUserLicenseProduct[0]->expires_at == null) {
+			if ($fUserLicenseProduct->expires_at == null) {
 				show_error("Attempting to renew a product that doesn't expire on it or buy a product you already have.", 500);
 				return; // todo: write these in a log
 			}
 
 			// Determine new expiration date
-			$newExpirationTimestamp = $fUserLicenseProduct[0]->expires_at_unix +
-				($targetProducts[0]->duration_days * 86400); // 86400 is a day
+			$newExpirationTimestamp = $fUserLicenseProduct->expires_at_unix +
+				($targetProduct->duration_days * 86400); // 86400 is a day
 
 			// Save new expiration date
 			$this->db->set('expires_at', date("Y-m-d H:i:s", $newExpirationTimestamp));
-			$this->db->where('id', $fUserLicenseProduct[0]->license_id);
+			$this->db->where('id', $fUserLicenseProduct->license_id);
 			$this->db->update('licenses');
 		}
 
@@ -159,5 +159,20 @@ class Licenses extends CI_Model {
 
 		// todo: log what happened
 		return $action; // may need to be updated
+	}
+
+	// Determines if the user already owns a license for the specified product group
+	// However, if the user owns the $requestProduct, we also return false
+	// This is used to prevent cheap upgrades and renewals, intentional or unintentional
+	public function user_owns_different_license_in_product_group($requestProductId, $userId) {
+		$this->db->select('licenses.product');
+		$this->db->from('licenses');
+		$this->db->join('products', 'products.id = licenses.product');
+		$this->db->join('product_groups', 'product_groups.id = products.product_group');
+		$this->db->where('owner_user', $userId);
+		$this->db->where('licenses.expires_at >', 'NOW()');
+		$this->db->where('licenses.product !=', $requestProductId);
+		$this->db->group_by('product_groups.id');
+		return $this->db->get()->num_rows() == 0 ? false : true;
 	}
 }
