@@ -1,5 +1,6 @@
-<div class="mt-5 pt-5">
-	<div class="col-md-6">
+<?php echo form_open('/store/request_purchase') ?>
+<div class="mt-5 pt-5 row">
+	<div class="col-md-6 col-xs-12">
 
 		<div class="form-group">
 		<?php
@@ -17,6 +18,8 @@
 				'class' => 'form-check-input',
 				'name' => 'product',
 				'id' => 'product_'.$p->id,
+				'value' => 'product_'.$p->id,
+				'data-price' => $p->price
 			);
 			// Check the correct box
 			if ($checkProduct == 'product_'.$p->id)
@@ -33,4 +36,26 @@
 		<?php endforeach; ?>
 		</div>
 	</div>
+
+	<div class="col-md-6 col-xs-12">
+		<div class="form-group">
+			<?php
+			$data = array(
+				'name' => 'payment_method',
+				'id' => 'payment_method',
+				'class' => 'form-control',
+				'options' => $payment_methods
+			);
+			echo form_dropdown($data); ?>
+		</div>
+		<p>Price: <span id="priceDisplay" /></p>
+		<?php
+		$data = array(
+			'class' => 'btn btn-success',
+			'value' => 'Buy Now'
+		);
+		echo form_submit($data)
+		?>
+	</div>
 </div>
+<?php echo form_close(); ?>

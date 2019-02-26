@@ -56,5 +56,8 @@ $route['translate_uri_dashes'] = FALSE;
 // modals
 $route['modals/(:any)'] = "modals/$1";
 
-// Store
+// Store (needs manual since store/(:any overrides all)
+$route['store/request_purchase'] = 'store/request_purchase';
 $route['store/(:any)'] = "store/view_product_group/$1";
+$route['complete_purchase/(:any)'] = "store/handle_purchase_token/1/$1";
+$route['cancel_purchase/(:any)'] = "store/handle_purchase_token/0/$1";

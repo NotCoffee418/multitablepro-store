@@ -48,18 +48,19 @@ class Purchases extends CI_Model {
 		$this->db->insert('purchases', $purchasesData);
 		// todo: log this
 
+		// Find the purchase we created
+		$this->db->select('*');
+		$this->db->from('purchases');
+		$this->db->where('user', $userId);
+		$this->db->where('product', $productId);
+		$this->db->like('price_paid', $price_paid); // floats need like
+		$this->db->where('purchase_type', $purchase_type);
+		$this->db->order_by('id', 'desc');
+		$result['purchase'] = ($this->db->get()->result())[0];
+		$purchaseId = $result['purchase']->id;
+
 		// Create row in purchase_tokens table if needed
 		if ($payment_method != 'FREE') {
-			// Find the id of the purchase we created
-			$this->db->select_max('id');
-			$this->db->from('purchases');
-			$this->db->where('user', $userId);
-			$this->db->where('product', $productId);
-			$this->db->like('price_paid', $price_paid); // floats need like
-			$this->db->where('purchase_type', $purchase_type);
-			$r = $this->db->get()->result();
-			$purchaseId = $r[0]->id;
-
 			// Insert the row
 			$twoCharPrefix = $payment_method == 'PAYPAL' ? 'PP' : 'UK'; // paypal or unknown for now
 			$complete_token = $this->generate_purchase_token($twoCharPrefix);
@@ -71,7 +72,15 @@ class Purchases extends CI_Model {
 			);
 			$this->db->insert('purchase_tokens', $purchaseTokensData);
 			// todo: log this
+
+			// Find the tokens we inserted
+			$this->db->select('*');
+			$this->db->from('purchase_tokens');
+			$this->db->where('purchase', $purchaseId);
+			$result['purchase_tokens'] = ($this->db->get()->result())[0];
 		}
+
+		return $result;
 	}
 
 	// generates a purchase token to ID the callback
@@ -167,5 +176,18 @@ class Purchases extends CI_Model {
 
 		// Clear user's purchase cache
 		$this->Apcu->delete('get_user_product_purchases-'.$purchase->user);
+
+		// Redirect the user to the appropriate page
+		switch ($tokenType) {
+			// Redirect back to product
+			case 'cancel':
+				$this->load->model('Products');
+				$pInfo = $this->Products->product_and_group_by_id();
+				return '/store/' . $pInfo['product_group']->short_name;
+			// Redirect to user panel
+			case 'complete':
+				return '/user';
+				break;
+		}
 	}
 }

@@ -22,6 +22,9 @@ class Store extends CI_Controller {
 			$data["page_description"] = $productGroup->seo_description;
 		$data["group_name"] = $productGroup->full_name;
 		$data["products"] = $this->Products->products_in_group($productGroup->id);
+		$data["payment_methods"] = array( // hardcoded
+			'PAYPAL' => 'PayPal'
+		);
 
 		// Load views
 		$this->load->view('shared/header', $data);
@@ -31,15 +34,91 @@ class Store extends CI_Controller {
 		$this->load->view('shared/footer');
 	}
 
-	public function complete_purchase($purchaseToken) {
-		// mark purchase as complete
-		$this->load->model('Purchases');
-		$this->Purchases->finish_purchase($purchaseToken, true);
+	public function request_purchase() {
+		$this->load->model(array(
+			'Purchases',
+			'Products'
+		));
+
+		// Get product and product group
+		$productIdInput = str_replace('product_', '', $this->input->post('product'));
+		$pInfo = $this->Products->product_and_group_by_id($productIdInput);
+
+		// -- Invalid requests
+		// Check for invalid input. This shouldn't happen, simply redirect to product page
+		$this->load->library('form_validation');
+		$this->form_validation->set_rules('payment_method', 'Payment Method', 'callback_valid_payment_method');
+		$this->form_validation->set_rules('product', 'Product', 'callback_valid_product');
+		if ($this->form_validation->run() === false) {
+			show_error('No valid product was selected. Go back and try again.');
+			//redirect('/store/'.$pInfo['product_group']->short_name);
+			return;
+		}
+
+		// User must be logged in to proceed
+		if ($this->Users->get_current_user() == null) {
+			$returnUrlEncoded = $this->Users->base64_url_encode(base_url().'store/'.$pInfo['product_group']->short_name);
+			show_error('Must be logged in to purchase a product.');
+			redirect('/user/login/'.$returnUrlEncoded);
+			return;
+		}
+
+		// -- Valid requests
+		// Create the purchase & purchase tokens
+		$purInfo = $this->Purchases->create_purchase(
+			$this->Users->get_current_user()->id,
+			$pInfo['product']->id,
+			'BUY',
+			$this->input->post('payment_method')
+		);
+
+		// Create payment
+		$redirectUrl = '';
+		switch ($this->input->post('payment_method')) {
+			case 'PAYPAL':
+				$this->load->model('Paypal');
+				$payment = $this->Paypal->create_buy_order($pInfo['product'], $purInfo['purchase_tokens']);
+				$redirectUrl = $payment->getApprovalLink();
+				break;
+		}
+
+		// Redirect to payment processor
+		redirect($redirectUrl, 'refresh');
 	}
 
-	public function cancel_purchase($purchaseToken) {
-		// not sure when this gets called but, remove the purchase from DB
+	// Called paypal at /cancel_purchase or /complete_purchase/token - see routes
+	// is_complete (true or false, 0 or 1) false: order was cancelled. true: order was paid
+	// purchase_token: 32 char (for purchase_tokens)
+	// paypal also passes it's token, eg: cancel_purchase/OURTOKEN?token=EC-6XK68085EP892640D&country.x=US&locale.x=en_US
+	public function handle_purchase_token($is_complete, $purchaseToken) {
+		//var_dump($this->input->get('token')); <- this works for pp token
+		// mark purchase as complete
 		$this->load->model('Purchases');
-		$this->Purchases->finish_purchase($purchaseToken, false);
+		$purchaseToken = substr($purchaseToken, 0, 32);
+		$redirectUrl = $this->Purchases->finish_purchase($purchaseToken, true);
+		redirect($redirectUrl);
+	}
+
+	function valid_payment_method($input) {
+		// All supported and allowed payment methods must be manually listed here
+		$allowedPaymentMethods = array(
+			'PAYPAL',
+		);
+		$this->form_validation->set_message('valid_product', 'Invalid payment method selected.');
+		return in_array($input, $allowedPaymentMethods);
+	}
+	function valid_product($input) {
+		// ensures that the product exist and is_public
+		$this->load->model('Products');
+		$productId = str_replace('product_', '', $input);
+		if (!$this->Products->purchasing_allowed($productId)) {
+			// Can occur when user messes with html, cache was not cleared after making a product un-public or no radiobox was checked
+			$this->form_validation->set_message('valid_product', 'No valid product was selected or product is no longer available for purchase.');
+			return false;
+		}
+		// Additional checks can go here (eg. upgradables)
+
+		// Valid product
+		return true;
 	}
 }
