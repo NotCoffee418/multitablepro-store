@@ -174,7 +174,24 @@ class Purchases extends CI_Model {
 
 		// todo: Send email with license
 
-		// Clear user's purchase cache
+		// Clear user cache (for up-to-date purchases to delete)
+		$this->Apcu->delete('get_user_product_purchases-'.$purchase->user);
+
+		// Clear user's unpaid purchases & tokens
+		$this->db->select('id');
+		$this->db->from('purchases');
+		$this->db->where('user', $purchase->user);
+		$this->db->where('is_complete', false);
+		$remainingUnpaidPurchases = $this->db->get()->result();
+		foreach ($remainingUnpaidPurchases as $purToDel) {
+			// Delete from purchases
+			$this->db->delete('purchases', array('id' => $purToDel->id));
+
+			// Delete purchase tokens
+			$this->db->delete('purchase_tokens', array('purchase' => $purToDel->id));
+		}
+
+		// Clear user's purchase cache again (with unpaid purchases gone)
 		$this->Apcu->delete('get_user_product_purchases-'.$purchase->user);
 
 		// Redirect the user to the appropriate page

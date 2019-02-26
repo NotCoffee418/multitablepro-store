@@ -52,7 +52,9 @@
 		<?php
 		$data = array(
 			'class' => 'btn btn-success',
-			'value' => 'Buy Now'
+			'value' => 'Buy Now',
+			'id' => 'buyBtn',
+			'onclick' => 'disableElement(\'#buyBtn\')'
 		);
 		echo form_submit($data)
 		?>

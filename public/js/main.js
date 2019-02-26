@@ -21,3 +21,7 @@ function copyInputToClipboard(inputId) {
 	$('#'+inputId).select();
 	document.execCommand('copy');
 }
+
+function disableElement(selectorStr) {
+	$(selectorStr).attr('disabled', 'disabled');
+}
