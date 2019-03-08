@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Paypal extends CI_Model {
 
 	// $products: array of products
-	public function create_buy_order($product, $purchase_tokens) {
+	public function create_buy_order($product, $purchase_tokens, $upgrade_discount = 0) {
 		// Prepare payer
 		$payer = new PayPal\Api\Payer();
 		$payer->setPaymentMethod("paypal");
@@ -16,24 +16,38 @@ class Paypal extends CI_Model {
 			->setQuantity(1)
 			->setSku($product->id)
 			->setPrice($product->price);
+		$items[] = $item;
+
+		// Add upgrade discount if applicable
+		if ($upgrade_discount != 0) {
+			$discountItem = new PayPal\Api\Item();
+			$discountItem->setName("Refund remaining time on previous license")
+				->setCurrency('USD')
+				->setQuantity(1)
+				->setSku($product->id)
+				->setPrice($upgrade_discount * -1);
+			$items[] = $discountItem;
+		}
+
+		// Create item list
 		$itemList = new PayPal\Api\ItemList();
-		$itemList->setItems(array($item));
+		$itemList->setItems($items);
 
 		// set total amount
 		$amount = new PayPal\Api\Amount();
 		$amount->setCurrency("USD")
-			->setTotal($product->price);
+			->setTotal($product->price - $upgrade_discount);
 
 		// transaction description
-		$timeString = ' ';
-		if ($product->duration_days == null) {
+		$timeString = '';
+		/*if ($product->duration_days == null) {  // broken on renewal/upgrade
 			$now = time();
-			$timeString = '(' .
+			$timeString = ' (' .
 				date("Y-m-d H:i:s", $now) .
 				' to ' .
 				date("Y-m-d H:i:s", $now + (86500 * $product->duration_days)) .
 				')';
-		}
+		}*/
 
 		// prepare transaction
 		$transaction = new PayPal\Api\Transaction();

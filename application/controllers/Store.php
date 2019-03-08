@@ -46,11 +46,11 @@ class Store extends CI_Controller {
 			return;
 		}
 
+		// Product data
+		$pgData = $this->Products->product_and_group_by_id($licenseData->product);
+
 		switch ($action) {
 			case 'renew':
-				// Product data
-				$pgData = $this->Products->product_and_group_by_id($licenseData->product);
-
 				// Create purchase
 				$purInfo = $this->Purchases->create_purchase($userId, $licenseData->product, $purchase_type = 'RENEW', $payment_method = 'PAYPAL');
 
@@ -59,6 +59,53 @@ class Store extends CI_Controller {
 				$payment = $this->Paypal->create_buy_order($pgData["product"], $purInfo['purchase_tokens']);
 				$redirectUrl = $payment->getApprovalLink();
 				redirect($redirectUrl, 'refresh');
+				break;
+			case 'upgrade':
+				$toProductId = str_replace('product_', '', $this->input->post('product'));
+				$discount = $this->Purchases->calculate_upgrade_discount($licenseId);
+
+				// Display form with upgradables
+				if ($toProductId == null) {
+					$data["license"] = $licenseData;
+					$data["discount"] = $discount;
+					$data["products"] = $this->Products->products_in_group($pgData['product_group']->id);
+
+					// Display form
+					$data["page_title"] = "Upgrade " . $pgData["product_group"]->full_name;
+					$this->load->view('shared/header', $data);
+					$this->load->view('store/license_upgrade', $data);
+					$this->load->view('shared/footer', $data);
+				}
+				else {
+					$this->load->library('form_validation');
+					//$this->form_validation->set_rules('payment_method', 'Payment Method', 'callback_valid_payment_method'); NIY on upgrades
+					$this->form_validation->set_rules('product', 'Product', 'callback_valid_product');
+
+					// Validate form
+					if ($this->form_validation->run() === false) {
+						echo validation_errors();
+						//redirect('/store/'.$pInfo['product_group']->short_name);
+						return;
+					}
+
+					// Load target product
+					$newPgdata = $this->Products->product_and_group_by_id($toProductId);
+
+					// Create the purchase & purchase tokens
+					$purInfo = $this->Purchases->create_purchase(
+						$userId,
+						$newPgdata['product']->id,
+						'UPGRADE',
+						'PAYPAL', //$this->input->post('payment_method') again, NIY
+						$newPgdata['product']->price - $discount
+					);
+
+					// Request paymen,t
+					$payment = $this->Paypal->create_buy_order($newPgdata['product'], $purInfo['purchase_tokens'], $discount);
+					$redirectUrl = $payment->getApprovalLink();
+					redirect($redirectUrl, 'refresh');
+					break;
+				}
 				break;
 		}
 	}

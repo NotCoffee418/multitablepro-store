@@ -30,6 +30,11 @@ class Licenses extends CI_Model {
 		return $this->db->get_where("licenses", array("license_key" => $key))->row();
 	}
 
+	// Returns license or null
+	public function find_license_by_id($id) {
+		return $this->db->get_where("licenses", array("id" => $id))->row();
+	}
+
 	// Returns licenses for display - userId null returns ALL licenses
 	public function get_user_product_licenses($userId = null, $include_expired = false) {
 		// get data
@@ -85,8 +90,8 @@ class Licenses extends CI_Model {
 		$this->db->from('licenses');
 		$this->db->join('products', 'products.id = licenses.product');
 		$this->db->join('product_groups', 'product_groups.id = products.product_group');
-		$this->db->where('licenses.owner_user', 1);
-		$this->db->where('licenses.product', 3);
+		$this->db->where('licenses.owner_user', $userId);
+		$this->db->where('licenses.product', $productId);
 		$this->db->where('licenses.expires_at IS NULL OR expires_at > NOW()');
 		$fUserLicenseProduct = $this->db->get()->row();
 
@@ -131,14 +136,17 @@ class Licenses extends CI_Model {
 
 		// UPGRADE - Change product
 		if ($action == 'UPGRADE') {
+			$newExpirationTimestamp = time() +
+				($targetProduct->duration_days * 86400); // 86400 is a day
+
 			$this->db->set('product', $productId);
-			$this->db->where('license_id',$fUserLicenseProduct->license_id);
+			$this->db->set('expires_at', date("Y-m-d H:i:s", $newExpirationTimestamp));
+			$this->db->where('id',$fUserLicenseProduct->license_id);
 			$this->db->update('licenses');
 		}
 
 		// RENEW - Change expires_at
-		// Upgrade also renews
-		if ($action == 'RENEW' || $action == 'UPGRADE') {
+		if ($action == 'RENEW') {
 			if ($fUserLicenseProduct->expires_at == null) {
 				show_error("Attempting to renew a product that doesn't expire on it or buy a product you already have.", 500);
 				return; // todo: write these in a log

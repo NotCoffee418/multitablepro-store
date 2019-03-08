@@ -30,9 +30,11 @@ class Purchases extends CI_Model {
 
 	// Creates a new, incomplete purchase
 	// Validation should happen in controller
-	public function create_purchase($userId, $productId, $purchase_type = 'BUY', $payment_method = 'FREE', $payment_reference = null) {
-		// Determine price paid based on current product price
-		$price_paid = $this->db->get_where('products', array('id' => $productId))->row()->price;
+	public function create_purchase($userId, $productId, $purchase_type = 'BUY', $payment_method = 'FREE', $customPrice = null, $payment_reference = null) {
+		// Determine price paid based on current product price or custom price
+		if ($customPrice == null)
+			$price_paid = $this->db->get_where('products', array('id' => $productId))->row()->price;
+		else $price_paid = $customPrice;
 
 		// Create row in purchases table
 		$purchasesData = array(
@@ -220,8 +222,22 @@ class Purchases extends CI_Model {
 		}
 		else {
 			$this->load->model('Products');
-			$pInfo = $this->Products->product_and_group_by_id();
+			$pInfo = $this->Products->product_and_group_by_id($purchase->product);
 			return '/store/' . $pInfo['product_group']->short_name;
 		}
+	}
+
+	// Calculates the value of the days the license has been active
+	public function calculate_upgrade_discount($licenseId) {
+		$this->db->select(
+		// How many 'license cycles' we have (eg. product = 31 days, expires in 62 days means output is 2
+			'(((UNIX_TIMESTAMP(licenses.expires_at) - UNIX_TIMESTAMP()) / 86400) / products.duration_days'.
+			// multiply price by license cycles
+			' * products.price) as discount');
+		$this->db->from('licenses');
+		$this->db->join('products', 'products.id = licenses.product');
+		$this->db->where('licenses.id', $licenseId);
+		$discount = $this->db->get()->row()->discount;
+		return $discount > 0 ? round($discount, 2) : 0;
 	}
 }
