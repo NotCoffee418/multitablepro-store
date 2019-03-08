@@ -175,4 +175,14 @@ class Licenses extends CI_Model {
 		$this->db->group_by('product_groups.id');
 		return $this->db->get()->num_rows() == 0 ? false : true;
 	}
+
+
+	// Returns license info or false
+	public function user_owns_license($userId, $licenseId) {
+		$this->db->select('*');
+		$this->db->from('licenses');
+		$this->db->where('id', $licenseId);
+		$this->db->where('owner_user', $userId);
+		return $this->db->get()->row();
+	}
 }

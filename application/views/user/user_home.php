@@ -31,6 +31,10 @@
 						</div>
 					</td>
 					<td><?php echo $prLic->expires_at == null ? "Never" : $prLic->expires_at; ?></td>
+					<td>
+						<a class="btn btn-success" href="/store/license-action/renew/<?php echo $prLic->license_id; ?>" role="button">Renew</a>
+						<a class="btn btn-success" href="/store/license-action/upgrade/<?php echo $prLic->license_id; ?>" role="button">Upgrade</a>
+					</td>
 				</tr>
 				<?php endforeach; ?>
 			</tbody>

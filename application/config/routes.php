@@ -61,3 +61,4 @@ $route['store/request_purchase'] = 'store/request_purchase';
 $route['store/(:any)'] = "store/view_product_group/$1";
 $route['complete_purchase/(:any)'] = "store/handle_purchase_token/1/$1";
 $route['cancel_purchase/(:any)'] = "store/handle_purchase_token/0/$1";
+$route['store/license-action/(:any)/(:any)'] = "store/license_action/$1/$2";

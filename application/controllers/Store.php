@@ -34,6 +34,35 @@ class Store extends CI_Controller {
 		$this->load->view('shared/footer');
 	}
 
+	// todo: needs work, only paypal for now
+	public function license_action($action, $licenseId) {
+		$this->load->model(array('Licenses', 'Purchases', 'Paypal', 'Products'));
+		$userId = $this->Users->get_current_user()->id;
+
+		// verify that user owns the license
+		$licenseData = $this->Licenses->user_owns_license($userId, $licenseId);
+		if ($licenseData === null) {
+			show_error("You are not logged in or you do not own this license. Please log in and try again");
+			return;
+		}
+
+		switch ($action) {
+			case 'renew':
+				// Product data
+				$pgData = $this->Products->product_and_group_by_id($licenseData->product);
+
+				// Create purchase
+				$purInfo = $this->Purchases->create_purchase($userId, $licenseData->product, $purchase_type = 'RENEW', $payment_method = 'PAYPAL');
+
+				// Create payment
+				$redirectUrl = '';
+				$payment = $this->Paypal->create_buy_order($pgData["product"], $purInfo['purchase_tokens']);
+				$redirectUrl = $payment->getApprovalLink();
+				redirect($redirectUrl, 'refresh');
+				break;
+		}
+	}
+
 	public function request_purchase() {
 		$this->load->model(array(
 			'Purchases',
