@@ -103,7 +103,7 @@ class Store extends CI_Controller {
 		// mark purchase as complete
 		$this->load->model('Purchases');
 		$purchaseToken = substr($purchaseToken, 0, 32);
-		$redirectUrl = $this->Purchases->finish_purchase($purchaseToken, true);
+		$redirectUrl = $this->Purchases->finish_purchase($purchaseToken, $is_complete);
 		redirect($redirectUrl);
 	}
 

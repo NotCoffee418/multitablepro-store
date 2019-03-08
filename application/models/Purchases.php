@@ -131,7 +131,7 @@ class Purchases extends CI_Model {
 	// setting $is_complete = false will also remove the purchase from purchases table (indicates cancelled)
 	public function finish_purchase($token, $is_complete) {
 		// load models
-		$this->load->model('Licenses');
+		$this->load->model(array('Licenses', 'Paypal'));
 
 		// get the purchase
 		$tokenType = $is_complete ? 'complete_token' : 'cancel_token';
@@ -142,10 +142,26 @@ class Purchases extends CI_Model {
 			return;
 		}
 
-		// remove token
-		$this->db->delete('purchase_tokens', array($tokenType => $token));
-
 		if ($is_complete) {
+			// Execute paypal payment
+			if ($purchase->payment_method == 'PAYPAL') {
+				if ($this->input->get('paymentId') == null) {
+					show_error("Something went wrong while executing the paypal payment. Try again or contact support.");
+					return;
+				}
+
+				// Execute the payment
+				$transactionId = $this->Paypal->execute_payment();
+				if ($transactionId === false)
+					return; // error displayed in Paypal model
+				else {
+					// Store the transaction ID and proceed
+					$this->db->set('payment_reference', $transactionId);
+					$this->db->where('id', $purchase->id);
+					$this->db->update('purchases');
+				}
+			}
+
 			// generate license key or change it's properties
 			$new_purchase_type = $this->Licenses->set_user_license(
 				$purchase->user, $purchase->product, $purchase->purchase_type);
@@ -172,6 +188,9 @@ class Purchases extends CI_Model {
 			// todo: log this
 		}
 
+		// remove token (we're not doing this for paypal.. Since you can
+		$this->db->delete('purchase_tokens', array($tokenType => $token));
+
 		// todo: Send email with license
 
 		// Clear user cache (for up-to-date purchases to delete)
@@ -195,16 +214,14 @@ class Purchases extends CI_Model {
 		$this->Apcu->delete('get_user_product_purchases-'.$purchase->user);
 
 		// Redirect the user to the appropriate page
-		switch ($tokenType) {
-			// Redirect back to product
-			case 'cancel':
-				$this->load->model('Products');
-				$pInfo = $this->Products->product_and_group_by_id();
-				return '/store/' . $pInfo['product_group']->short_name;
-			// Redirect to user panel
-			case 'complete':
-				return '/user';
-				break;
+		if ($is_complete) {
+
+			return '/user';
+		}
+		else {
+			$this->load->model('Products');
+			$pInfo = $this->Products->product_and_group_by_id();
+			return '/store/' . $pInfo['product_group']->short_name;
 		}
 	}
 }

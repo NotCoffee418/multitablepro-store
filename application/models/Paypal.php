@@ -56,15 +56,40 @@ class Paypal extends CI_Model {
 			->setTransactions(array($transaction));
 
 		$request = clone $payment;
-		//try { disable catch for testing
+		try {
 			$payment->create($this->get_api_context());
-		//}
-		//catch (Exception $ex) {
+			// call $payment->getApprovalLink(); to get payment url
+			return $payment;
+		}
+		catch (Exception $ex) {
+			return null;
+		}
+	}
 
-		//}
+	public function execute_payment() {
+		try {
+			$paymentId = $this->input->get('paymentId');
+			$payerId = $this->input->get('PayerID');
+			$apiContext = $this->get_api_context();
+			$payment = PayPal\Api\Payment::get($paymentId, $apiContext);
 
-		// call $payment->getApprovalLink(); to get payment url
-		return $payment;
+			// Prepare payment execution
+			$execution = new \PayPal\Api\PaymentExecution();
+			$execution->setPayerId($payerId);
+
+			// Execute payment
+			$result = $payment->execute($execution, $apiContext);
+
+			if ($result->getState() == 'approved' || $result->getState() == 'APPROVED') {
+				// return transaction id
+				return $result->transactions[0]->related_resources[0]->sale->id;
+			}
+			else return false; // user cancelled, something went wrong, ..
+		}
+		catch (Exception $ex){
+			show_error("Something went wrong while executing the payment. Try again or contact support.");
+			return false;
+		}
 	}
 
 	public function get_api_context() {
@@ -72,18 +97,28 @@ class Paypal extends CI_Model {
 		if ($this->SiteSettings->get('paypal_debug', false) == true) { // (should be 1 for debug, 0 for live account)
 			$client = $this->SiteSettings->get('paypal_debug_clientid', false);
 			$secret = $this->SiteSettings->get('paypal_debug_secret', false);
+			$mode = 'sandbox';
 		}
 		else { // live credentials
 			$client = $this->SiteSettings->get('paypal_live_clientid', false);
 			$secret = $this->SiteSettings->get('paypal_live_secret', false);
+			$mode = 'live';
 		}
 
-		return new \PayPal\Rest\ApiContext(
+		// Create api context
+		$apiContext = new \PayPal\Rest\ApiContext(
 			new \PayPal\Auth\OAuthTokenCredential(
 				$client,     // ClientID
 				$secret     // ClientSecret
 			)
 		);
+
+		// Set config live enviromnent if needed
+		$apiContext->setConfig(array(
+			'mode' => $mode
+		));
+
+		return $apiContext;
 	}
 
 }
