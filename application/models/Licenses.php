@@ -193,4 +193,30 @@ class Licenses extends CI_Model {
 		$this->db->where('owner_user', $userId);
 		return $this->db->get()->row();
 	}
+
+	public function get_trial_status($macAddress) {
+		// See if mac is known
+		$q = $this->db->get_where("trials", array("mac_address" => $macAddress));
+
+		// Create new trial if needed
+		if ($q->num_rows() == 0) {
+			$trialEndTime = date("Y-m-d H:i:s", time() + (30 * 86400)); // month trial
+			$insertData = array(
+				"mac_address" => $macAddress,
+				"expires_at" => $trialEndTime
+			);
+			$this->db->insert("trials", $insertData);
+		}
+
+		// Get response
+		$this->db->select('expires_at');
+		$this->db->select('expires_at > CURRENT_TIMESTAMP() AS is_valid');
+		$this->db->from("trials");
+		$this->db->where('mac_address', $macAddress);
+		$r = $this->db->get()->row();
+		return array(
+			"expires_at" => $r->expires_at,
+			"is_valid" => $r->is_valid == true // since db returns 0 or 1
+		);
+	}
 }
