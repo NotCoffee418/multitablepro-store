@@ -37,4 +37,29 @@ class Admin extends CI_Controller {
 		// Back to admin home
 		redirect("/admin", "refresh");
 	}
+
+	public function generate_license_for_user() {
+		if (!$this->Users->has_admin_permission()) {
+			show_error("Forbidden", 403);
+			return;
+		}
+
+		// Check if input is valid, no validation beyond that
+		if ($this->input->post("user") == null || $this->input->post("product") == null ||
+				!is_numeric($this->input->post("user")) || !is_numeric($this->input->post("product")))
+		{
+			echo "User and product must be ID's";
+			return;
+		}
+
+		// Create license for user
+		$this->load->model("Licenses");
+		$this->Licenses->set_user_license($this->input->post("user"), $this->input->post("product"), 'BUY');
+
+		// Print info about user & new license
+		echo "Created license<br></br>User:<br>";
+		print_r($this->db->get_where("users", array('id' => $this->input->post("user")))->row());
+		echo "<br><br>User's licenses<br>";
+		print_r($this->db->get_where("licenses", array('owner_user' => $this->input->post("user"), 'product' => $this->input->post("product")))->row());
+	}
 }
