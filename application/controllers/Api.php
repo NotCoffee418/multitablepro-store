@@ -20,7 +20,7 @@ class Api extends CI_Controller {
 		else if ($licenseKey == 'TRIAL')
 		{
 			$this->load->model('Licenses');
-			$data["result"] = $this->Licenses->get_trial_status($macAddr);
+			$data["result"] = $this->Licenses->get_trial_status($macAddr, $requestProductGroup);
 		}
 
 		// Validate license
