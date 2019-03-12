@@ -27,7 +27,7 @@ class Licenses extends CI_Model {
 
 	// Returns license or null
 	public function find_license($key) {
-		return $this->db->get_where("licenses", array("license_key" => $key))->row();
+		return $this->db->get_where("licenses", array('license_key' => $key))->row();
 	}
 
 	// Returns license or null
@@ -194,7 +194,7 @@ class Licenses extends CI_Model {
 		return $this->db->get()->row();
 	}
 
-	public function get_trial_status($macAddress) {
+	public function get_trial_status($macAddress, $productGroupId) {
 		// See if mac is known
 		$q = $this->db->get_where("trials", array("mac_address" => $macAddress));
 
@@ -203,7 +203,8 @@ class Licenses extends CI_Model {
 			$trialEndTime = date("Y-m-d H:i:s", time() + (30 * 86400)); // month trial
 			$insertData = array(
 				"mac_address" => $macAddress,
-				"expires_at" => $trialEndTime
+				"expires_at" => $trialEndTime,
+				"product_group" => $productGroupId,
 			);
 			$this->db->insert("trials", $insertData);
 		}
@@ -213,10 +214,54 @@ class Licenses extends CI_Model {
 		$this->db->select('expires_at > CURRENT_TIMESTAMP() AS is_valid');
 		$this->db->from("trials");
 		$this->db->where('mac_address', $macAddress);
+		$this->db->where('product_group', $productGroupId);
 		$r = $this->db->get()->row();
 		return array(
 			"expires_at" => $r->expires_at,
 			"is_valid" => $r->is_valid == true // since db returns 0 or 1
+		);
+	}
+
+	// called by api/validate_license
+	public function validate_license($licenseKey, $productGroupId) {
+		// Get info
+		$this->load->model('Products');
+		$this->db->select('licenses.expires_at > CURRENT_TIMESTAMP() AS is_valid'); // 0 or 1 -
+		$this->db->select('licenses.expires_at as expires_at');
+		$this->db->select('products.name as product_name');
+		$this->db->select('products.description as product_description');
+		$this->db->select('users.first_name as first_name');
+		$this->db->select('users.last_name as last_name');
+		$this->db->select('users.email as email');
+		$this->db->from('licenses');
+		$this->db->join('users', 'users.id = licenses.owner_user');
+		$this->db->join('products', 'products.id = licenses.product');
+		$this->db->join('product_groups', 'product_groups.id = products.product_group');
+		$this->db->where('licenses.license_key', $licenseKey);
+		$this->db->where('product_groups.id', $productGroupId);
+		$r = $this->db->get()->row();
+
+		// Return invalid license
+		if ($r == null)
+			return array(
+				'is_valid' => 0,
+				'license_status_message' => 'Invalid or expired license'
+			);
+
+		// Get restrictions
+		$restrictions = $this->Products->get_product_restrictions_array($r->product_id);
+
+		// Return results
+		return array(
+			'is_valid' => $r->is_valid,
+			'expires_at' => $r->expires_at,
+			'product_name' => $r->product_name,
+			'product_description' => $r->product_description,
+			'first_name' => $r->first_name,
+			'last_name' => $r->last_name,
+			'email' => $r->email,
+			'restrictions' => $restrictions,
+			'license_status_message' => 'Active license',
 		);
 	}
 }

@@ -51,4 +51,27 @@ class Products extends CI_Model {
 		$this->db->where('is_public', true);
 		return $this->db->get()->num_rows() == 0 ? false : true;
 	}
+
+	public function get_product_restrictions_array($productId) {
+		$result = $this->Apcu->get("get_product_restrictions_array_$productId");
+		if ($result == null) {
+			$result = array();
+			$row = $this->db->get_where("products", array('id' => $productId))->row();
+
+			// Check for valid product
+			if($row == null) {
+				throw new Exception("Product for the license was not found. Contact support!"); // shouldnt happen unless manually messing with licenses
+			}
+
+			// Define $result
+			foreach (explode(',', $row->restrictions) as $ruleStr) {
+				$rule = explode(':', $ruleStr);
+				$result[$rule[0]] = $rule[1];
+			}
+
+			// Cache it
+			$this->Apcu->set("get_product_restrictions_array_$productId", $result);
+		}
+		return $result;
+	}
 }
