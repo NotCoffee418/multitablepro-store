@@ -25,7 +25,12 @@ class Api extends CI_Controller {
 
 		// Validate license
 		else {
-			$data["result"] = $this->Licenses->validate_license($licenseKey, $requestProductGroup);
+			try {
+				$data["result"] = $this->Licenses->validate_license($licenseKey, $requestProductGroup);
+			}
+			catch (Exception $ex) {
+				$data["errors"][] = $ex->getMessage();
+			}
 		}
 
 		// Output
