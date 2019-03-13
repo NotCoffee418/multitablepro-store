@@ -62,5 +62,3 @@
 		</div>
 	</div>
 </nav>
-
-<main role="main" class="container">

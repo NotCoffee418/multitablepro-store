@@ -1,3 +1,5 @@
+
+<main role="main" class="container">
 <div class="mt-5 pt-5">
 	<h2>My Licenses</h2>
 	<?php if (count($productLicenses) == 0): ?>
