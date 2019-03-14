@@ -82,4 +82,17 @@ class Versions extends CI_Model {
 		$this->db->order_by("version_info.id", "desc");
 		return $this->db->get()->result();
 	}
+
+	public function publish_new($productGroupId, $version, $branch, $changelog) {
+		$data = array(
+			"product_group" => $productGroupId,
+			"version" => $version,
+			"branch" => $branch,
+			"changelog" => $changelog
+		);
+		$this->db->insert("version_info", $data);
+
+		// Return the ID
+		return $this->db->get_where("version_info", $data)->row()->id;
+	}
 }

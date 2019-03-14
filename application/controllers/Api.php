@@ -37,6 +37,20 @@ class Api extends CI_Controller {
 		$this->display_json($data);
 	}
 
+	public function publish_new_version() {
+		$data = $this->get_output_template();
+		if ($this->input->post("access_token") !== $this->SiteSettings->get("api_admin_token")) {
+			$data["errors"][] = "Invalid access token";
+		}
+
+		// publish new version
+		$this->load->model("Versions");
+		$data["result"]["version_id"] = $this->Versions->publish_new(
+			$this->input->post("product_group"), $this->input->post("version"), $this->input->post("branch"), $this->input->post("changelog"));
+
+		$this->display_json($data);
+	}
+
 	private function display_json($data) {
 		$this->output->set_content_type('application/json');
 		$this->output->set_output(json_encode($data));
