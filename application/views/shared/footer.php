@@ -1,3 +1,33 @@
+<div class="container mt-5">
+	<footer class="pt-4 my-md-5 pt-md-5 border-top">
+		<div class="row">
+			<div class="col-12 col-md">
+				<small class="d-block mb-3 text-muted">© 2019 MultiTable Pro - All rights reserved</small>
+			</div>
+			<div class="col-6 col-md">
+				<h5>Features</h5>
+				<ul class="list-unstyled text-small">
+					<li><a class="text-muted" href="/store/multitable-pro">Store</a></li>
+					<li><a class="text-muted" href="/download">Free 30-day trial</a></li>
+					<li><a class="text-muted" href="/user">Customer Panel</a></li>
+				</ul>
+			</div>
+			<div class="col-6 col-md">
+				<h5>Resources</h5>
+				<ul class="list-unstyled text-small">
+					<li><a class="text-muted" href="#">Discord</a></li>
+				</ul>
+			</div>
+			<div class="col-6 col-md">
+				<h5>About</h5>
+				<ul class="list-unstyled text-small">
+					<li><a class="text-muted" href="/eula">EULA</a></li>
+					<li><a class="text-muted" href="/privacy-policy">Privacy Policy</a></li>
+				</ul>
+			</div>
+		</div>
+	</footer>
+</div>
 
 <!-- Bootstrap core JavaScript
 ================================================== -->

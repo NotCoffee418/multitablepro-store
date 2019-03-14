@@ -25,4 +25,20 @@ class Home extends CI_Controller {
 		$this->load->view('home');
 		$this->load->view('shared/footer');
 	}
+
+	public function eula() {
+		$data['user'] = $this->Users->get_current_user();
+		$data["page_title"] = "End User License Agreement";
+		$this->load->view('shared/header', $data);
+		$this->load->view('eula');
+		$this->load->view('shared/footer');
+	}
+
+	public function privacy_policy() {
+		$data['user'] = $this->Users->get_current_user();
+		$data["page_title"] = "Privacy Policy";
+		$this->load->view('shared/header', $data);
+		$this->load->view('privacy-policy');
+		$this->load->view('shared/footer');
+	}
 }

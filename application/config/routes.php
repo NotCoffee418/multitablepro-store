@@ -53,6 +53,10 @@ $route['default_controller'] = 'home/index';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
+// Home & sub-pages
+$route['eula'] = "home/eula";
+$route['privacy-policy'] = "home/privacy_policy";
+
 // modals
 $route['modals/(:any)'] = "modals/$1";
 
