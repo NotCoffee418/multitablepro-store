@@ -36,9 +36,7 @@
 				</div>
 			<?php endforeach; ?>
 			</div>
-		</div>
 
-		<div class="col-md-6 col-xs-12">
 			<div class="form-group">
 				<?php
 				$data = array(
@@ -49,16 +47,21 @@
 				);
 				echo form_dropdown($data); ?>
 			</div>
-			<p>Price: <span id="priceDisplay" /></p>
 			<?php
 			$data = array(
-				'class' => 'btn btn-success',
+				'class' => 'btn btn-lg btn-success',
 				'value' => 'Buy Now',
 				'id' => 'buyBtn',
 				'onclick' => 'disableElement(\'#buyBtn\')'
 			);
 			echo form_submit($data)
 			?>
+		</div>
+
+		<div class="col-md-6 col-xs-12">
+			<img class="img-fluid m-3" src="/img/product-group-preview/<?php echo $group_short ?>.webp"
+				 alt="<?php echo $group_name; ?> software preview"><br>
+
 		</div>
 	</div>
 	<?php echo form_close(); ?>

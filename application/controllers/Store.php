@@ -21,6 +21,7 @@ class Store extends CI_Controller {
 		if (isset($productGroup->full_name))
 			$data["page_description"] = $productGroup->seo_description;
 		$data["group_name"] = $productGroup->full_name;
+		$data["group_short"] = $productGroup->short_name;
 		$data["products"] = $this->Products->products_in_group($productGroup->id);
 		$data["payment_methods"] = array( // hardcoded
 			'PAYPAL' => 'PayPal'

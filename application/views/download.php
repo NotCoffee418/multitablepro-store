@@ -1,8 +1,6 @@
 <main role="main" class="container mt-5 pt-5">
 	<div class="text-center">
 		<?php
-		$branchDisplay = $versionInfo["requested_version"]->branch == "RELEASE" ?
-			"" : " (". ucfirst(strtolower($versionInfo["requested_version"]->branch)) .")";
 		$lowerCaseBranch = strtolower($versionInfo["requested_version"]->branch);
 		$downloadLink = "/download/{$versionInfo["requested_version"]->product_group_short_name}/".
 			"$lowerCaseBranch/{$versionInfo["requested_version"]->version}/setup"
