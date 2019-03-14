@@ -4,7 +4,7 @@
 		<div class="text-center">
 			<h1 class="text-light">MultiTable Pro</h1>
 			<img class="m-3" style="background:#fff; width:320px; height:320px;">
-			<p class="lead text-light mt-1">The ULTIMATE table management tool!</p>
+			<p class="lead text-light mt-1">The ULTIMATE Multi-Tabling Tool!</p>
 		</div>
 
 
@@ -22,11 +22,11 @@
 				<div class="card-body">
 					<h5 class="card-title">Automatically Move Tables</h5>
 					<p class="card-text">
-						MultiTable Pro moves your tables to the best possible position.<br>
-						Tables that require you to act become larger while tables that require no action are moved to smaller slots.<br>
+						MultiTable Pro moves your poker tables to the best possible position.<br>
+						Tables which require you to act become larger, while inactive poker tables are moved to smaller slots.<br>
 						This will help you play better and easier on more tables.
 						<div class="text-center">
-							<img src="/img/ps-tables-default-profile.webp" class="img-responsive" alt="MultiTable Pro Preview Small">
+							<img src="/img/ps-tables-example.webp" class="img-fluid" alt="MultiTable Pro Preview Small">
 						</div>
 					</p>
 				</div>
@@ -40,7 +40,7 @@
 						Do you have a small screen? Maybe you have 5 monitors! No matter.<br>
 						MultiTable Pro lets you easily create your own profile that best suits your needs.<br>
 						<div class="text-center">
-							<img src="/img/profile-preview.webp" class="img-responsive" alt="MultiTable Pro Profile">
+							<img src="/img/profile-preview.webp" class="img-fluid" alt="MultiTable Pro Profile">
 						</div>
 					</p>
 				</div>
@@ -56,6 +56,9 @@
 						With MultiTable Pro you can just press a button which moves your table aside while continuing to play on other tables while you consider the best course of action for your aside table.<br>
 						<br>
 						When you're done, you can simply press the hotkey again to move it back into the normal rotation.
+						<div class="text-center">
+							<img src="/img/royal-ponder.webp" class="img-fluid" alt="MultiTable Pro Poker Table Royal Flush">
+						</div>
 					</p>
 				</div>
 			</div>

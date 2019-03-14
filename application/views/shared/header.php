@@ -33,7 +33,7 @@
 				<a class="nav-link" href="/store/multitable-pro">Buy</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" href="/Suppoer">Support</a>
+				<a class="nav-link" href="/support">Support</a>
 			</li>
 		</ul>
 		<div class="dropdown-divider"></div>
@@ -52,10 +52,10 @@
 				</li>
 			<?php else: ?>
 				<li class="nav-item">
-					<a class="btn btn-outline-light" role="button" rel="modal:open" href="/modals/login">Customer Portal</a>
+					<a class="btn btn-outline-light ml-3" role="button" rel="modal:open" href="/modals/login">Customer Portal</a>
 				</li>
 				<li class="nav-item">
-					<a class="btn btn-outline-info" role="button" href="/download">Try for free!</a>
+					<a class="btn btn-outline-info ml-3" role="button" href="/download">Try for free!</a>
 				</li>
 			<?php endif; ?>
 			</ul>

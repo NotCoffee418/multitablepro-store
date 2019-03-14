@@ -62,3 +62,10 @@ $route['store/(:any)'] = "store/view_product_group/$1";
 $route['complete_purchase/(:any)'] = "store/handle_purchase_token/1/$1";
 $route['cancel_purchase/(:any)'] = "store/handle_purchase_token/0/$1";
 $route['store/license-action/(:any)/(:num)'] = "store/license_action/$1/$2";
+
+// download
+$route['download'] = "download/index";
+$route['download/(:any)'] = "download/index/$1";
+$route['download/(:any)/(:any)'] = "download/index/$1/$2";
+$route['download/(:any)/(:any)/(:any)'] = "download/index/$1/$2/$3";
+$route['download/(:any)/(:any)/(:any)/(:any)'] = "download/index/$1/$2/$3/$4";
