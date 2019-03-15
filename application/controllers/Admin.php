@@ -14,7 +14,11 @@ class Admin extends CI_Controller {
 			"subject" => "Testing Noreply Subject",
 			'input' => "Some Input"
 		);
-		$this->Email->sendMail("test_mail", $data);
+		//$this->Email->sendMail("account_verify", $data);
+
+		$this->load->view('email_templates/mail_header', $data);
+		$this->load->view('email_templates/account_verify', $data);
+		$this->load->view('email_templates/mail_footer', $data);
 	}
 
 	public function index() {

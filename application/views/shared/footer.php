@@ -15,7 +15,7 @@
 			<div class="col-6 col-md">
 				<h5>Resources</h5>
 				<ul class="list-unstyled text-small">
-					<li><a class="text-muted" href="#">Discord</a></li>
+					<li><a class="text-muted" href="https://discord.gg/qV4QrZx">Discord</a></li>
 				</ul>
 			</div>
 			<div class="col-6 col-md">
