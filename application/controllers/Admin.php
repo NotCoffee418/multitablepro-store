@@ -2,6 +2,21 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Admin extends CI_Controller {
+	public function test() {
+		if (!$this->Users->has_admin_permission()) {
+			show_error("Forbidden", 403);
+			return;
+		}
+
+		$this->load->model("Email");
+		$data = array(
+			"toEmail" => $this->Users->get_current_user()->email,
+			"subject" => "Testing Noreply Subject",
+			'input' => "Some Input"
+		);
+		$this->Email->sendMail("test_mail", $data);
+	}
+
 	public function index() {
 		if (!$this->Users->has_admin_permission()) {
 			show_error("Forbidden", 403);
