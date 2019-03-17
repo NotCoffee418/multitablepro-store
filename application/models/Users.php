@@ -32,6 +32,10 @@ class Users extends CI_Model {
 			$token = $row->verification_token;
 			$mailSendAllowed = $row->send_request_allowed == 1;
 		}
+		else if ($user->email_verified == 1) {
+			show_error('Your e-mail address is already verified');
+			return false;
+		}
 		else {
 			// Generate token & insert to DB
 			$token = $this->generate_email_verify_token();
@@ -130,9 +134,15 @@ class Users extends CI_Model {
 		return $this->db->get_where("users", array("id" => $id), 1)->row();
 	}
 
+	// Redefine session variable based on current & return it
 	// returns null if not logged in
 	public function get_current_user() {
-		return $this->session->userdata("user");
+		$sessUser = $this->session->userdata("user");
+		if ($sessUser != null) {
+			$user = $this->db->get_where('users', array('id' => $sessUser->id))->row();
+			$this->create_user_session($user);
+		}
+		return $sessUser;
 	}
 
 	public function get_user_role($userId = null) {
