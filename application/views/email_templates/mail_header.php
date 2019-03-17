@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<title><?php echo $subject; ?></title>
-	<style media="all" type="text/css">
+	<style media="all">
 		<?php
 		// Referencing any css file does not work
 		// including full bootstrap makes the message too large for gmail to display it

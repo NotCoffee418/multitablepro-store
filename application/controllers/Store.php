@@ -3,6 +3,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Store extends CI_Controller {
 
+	public function index() {
+		// Temporary redirect until more products are needed/added
+		redirect("/store/multitable-pro", 'auto', 302 );
+	}
+
 	// routed: /store/short-name-here
 	public function view_product_group($shortName) {
 		$this->load->model('Products');
