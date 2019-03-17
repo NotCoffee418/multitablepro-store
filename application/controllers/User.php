@@ -131,6 +131,32 @@ class User extends CI_Controller {
 		redirect('/', 'refresh');
 	}
 
+	public function verify_account($token = null) {
+		if ($token == null) {
+			$user = $this->Users->get_current_user();
+			if ($user == null) {
+				show_error('You must be logged in to request an account verification email.');
+			}
+			else if ($user->email_verified) {
+				show_error('Your account is already verified.');
+			}
+			else {
+				$this->Users->request_email_verification($user);
+				redirect('/user'); // lazy no-notify redirect
+			}
+		}
+		else { // Attempt to verify the account through input token
+			$success = $this->Users->try_verify_account($token);
+			if ($success) {
+				redirect('/user/#account-verified');
+			}
+			else {
+				show_error("Invalid account verification token. The token does not exist or the account has already been verified".
+					"<a href='/user'>Click here</a> to return to the user panel");
+			}
+		}
+	}
+
 	function valid_captcha($action) {
 		$this->load->model('Recaptcha');
 		$r = $this->Recaptcha->validate($action);

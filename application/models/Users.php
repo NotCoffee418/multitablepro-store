@@ -12,7 +12,88 @@ class Users extends CI_Model {
 			"last_name" => $last_name
 		);
 		$this->db->insert("users", $data);
-		return $this->by_email($email);
+		$user = $this->by_email($email);
+		$this->request_email_verification($user);
+		return $user;
+	}
+
+	public function request_email_verification($user) {
+		// See if user already has a pending verification request
+		$this->db->select('user');
+		$this->db->select('verification_token');
+		$this->db->select('TIMESTAMPADD(MINUTE, 5, last_request_time) < CURRENT_TIMESTAMP() AS send_request_allowed');
+		$this->db->where('user', $user->id);
+		$q = $this->db->get("email_verifications");
+
+		$mailSendAllowed = true;
+		$token = '';
+		if ($q->num_rows() > 0) {
+			$row = $q->row();
+			$token = $row->verification_token;
+			$mailSendAllowed = $row->send_request_allowed == 1;
+		}
+		else {
+			// Generate token & insert to DB
+			$token = $this->generate_email_verify_token();
+			$data = array(
+				'user' => $user->id,
+				'verification_token' => $token
+			);
+			$this->db->insert('email_verifications', $data);
+		}
+
+		// User recently requested a verification email - show error
+		if (!$mailSendAllowed) {
+			show_error('You are only allow to request an account verification e-mail every 5 minutes.<br>'.
+			'Please check your spam folder and try again in a few minutes.');
+			return false;
+		}
+		else {
+			// Send the account verification mail
+			$mailData = array(
+				'toEmail' => $user->email,
+				'first_name' => $user->first_name,
+				'subject' => 'Verify your account',
+				'verification_token' => $token
+			);
+			$this->load->model("Email");
+			$this->Email->sendMail('account_verify', $mailData);
+
+			// Update last request time
+			$this->db->set('last_request_time',  date("Y-m-d H:i:s", time()));
+			$this->db->where('verification_token', $token);
+			$this->db->update('email_verifications');
+			return true;
+		}
+	}
+
+	public function try_verify_account($token) {
+		$q = $this->db->get_where("email_verifications", array('verification_token' => $token));
+
+		// Check if verification request exists
+		if ($q->num_rows() == 0)
+			return false;
+
+		// get user & verify request data
+		$verify_row = $q->row();
+		$userRow = $this->by_id($verify_row->user);
+
+		// Check if user exist
+		if ($userRow == null){
+			show_error("User for this token does not exist. Contact support.");
+			return false;
+		}
+
+		// Set user's account to verified
+		$this->db->set('email_verified', 1);
+		$this->db->where('id', $verify_row->user);
+		$this->db->update('users');
+
+		// Remove the verification request
+		$this->db->delete('email_verifications', array('verification_token' => $token));
+
+		// Return success
+		return true;
 	}
 
 	public function login($email, $plain_pass) {
@@ -43,6 +124,10 @@ class Users extends CI_Model {
 
 	public function by_email($email) {
 		return $this->db->get_where("users", array("email" => $email), 1)->row();
+	}
+
+	public function by_id($id) {
+		return $this->db->get_where("users", array("id" => $id), 1)->row();
 	}
 
 	// returns null if not logged in
@@ -89,5 +174,23 @@ class Users extends CI_Model {
 		if (filter_var($url, FILTER_VALIDATE_URL) === FALSE)
 			return null;
 		else return $url;
+	}
+
+	public function generate_email_verify_token() {
+		$tokens = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+		$length = 32;
+		do {
+			$token = "";
+			for ($i = 0; $i < $length; $i++) {
+				$token .= $tokens[rand(0, 35)];
+			}
+
+			// Check if token already exists
+			$this->db->select('*');
+			$this->db->from('email_verifications');
+			$this->db->where('verification_token', $token);
+			$foundTokens = $this->db->get()->num_rows();
+		} while ($foundTokens > 0); // try again if token already exists somehow
+		return $token;
 	}
 }

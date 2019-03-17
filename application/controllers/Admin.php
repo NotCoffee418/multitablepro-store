@@ -8,17 +8,13 @@ class Admin extends CI_Controller {
 			return;
 		}
 
-		$this->load->model("Email");
-		$data = array(
-			"toEmail" => $this->Users->get_current_user()->email,
-			"subject" => "Testing Noreply Subject",
-			'input' => "Some Input"
-		);
+		$this->load->model(array("Email", "Users"));
+		$this->Users->request_email_verification($this->Users->get_current_user());
 		//$this->Email->sendMail("account_verify", $data);
 
-		$this->load->view('email_templates/mail_header', $data);
-		$this->load->view('email_templates/account_verify', $data);
-		$this->load->view('email_templates/mail_footer', $data);
+		//$this->load->view('email_templates/mail_header', $data);
+		//$this->load->view('email_templates/account_verify', $data);
+		//$this->load->view('email_templates/mail_footer', $data);
 	}
 
 	public function index() {
