@@ -95,6 +95,9 @@ class Licenses extends CI_Model {
 		$this->db->where('licenses.expires_at IS NULL OR expires_at > NOW()');
 		$fUserLicenseProduct = $this->db->get()->row();
 
+		// Grab the license id for mail
+		$licenseId = null;
+
 		// Change buy to renew if user already has a license in the same product_group
 		if ($action == 'BUY' && $fUserLicenseProduct != null) {
 			$action = 'RENEW';
@@ -132,6 +135,9 @@ class Licenses extends CI_Model {
 			);
 			$this->db->insert('licenses', $insertData);
 			// todo: log this
+
+			// Grab license id we just inserted (BUY)
+			$licenseId = $this->db->get_where('license_key', $license_key)->row()->id;
 		}
 
 		// UPGRADE - Change product
@@ -143,6 +149,9 @@ class Licenses extends CI_Model {
 			$this->db->set('expires_at', date("Y-m-d H:i:s", $newExpirationTimestamp));
 			$this->db->where('id',$fUserLicenseProduct->license_id);
 			$this->db->update('licenses');
+
+			// Grab license id we just inserted (UPGRADE)
+			$licenseId = $licenseId = $this->db->get_where('license_key', $license_key)->row()->id;
 		}
 
 		// RENEW - Change expires_at
@@ -160,12 +169,18 @@ class Licenses extends CI_Model {
 			$this->db->set('expires_at', date("Y-m-d H:i:s", $newExpirationTimestamp));
 			$this->db->where('id', $fUserLicenseProduct->license_id);
 			$this->db->update('licenses');
+
+			// Grab license id we just inserted (RENEW)
+			$licenseId = $licenseId = $this->db->get_where('license_key', $license_key)->row()->id;
 		}
 
 		// Clear user's license cache
 		$this->Apcu->delete('get_user_product_licenses-'.$userId);
 
 		// todo: log what happened
+
+		// Send email with license info
+		$this->sendLicenseMail($licenseId);
 		return $action; // may need to be updated
 	}
 
@@ -264,4 +279,33 @@ class Licenses extends CI_Model {
 			'license_status_message' => 'Active license',
 		);
 	}
+
+	// Send e-mail with license key to the user based on license id
+	public function sendLicenseMail($licenseId) {
+		// Get the data we need
+		$this->db->select('licenses.license_key as license_key');
+		$this->db->select('licenses.expires_at as expires_at');
+		$this->db->select('users.email as email');
+		$this->db->select('products.name as product_name');
+		$this->db->select('product_groups.short_name as short_name');
+		$this->db->from('licenses');
+		$this->db->join('users', 'users.id = licenses.owner_user');
+		$this->db->join('products', 'products.id = licenses.product');
+		$this->db->join('product_groups', 'product_groups.id = products.product_group');
+		$this->db->where('licenses.id', $licenseId);
+		$data = $this->db->get()->row();
+
+		// Send the e-mail
+		$this->load->model("Email");
+		$mailData = array(
+			'subject' => "Your {$data->product_name} License Key",
+			'toEmail' => $data->email,
+			'license_key' => $data->license_key,
+			'expires_at' => $data->expires_at,
+			'product_name' => $data->product_name,
+			'short_name' => $data->short_name,
+		);
+		$this->Email->sendMail('license_created', $mailData);
+	}
+
 }

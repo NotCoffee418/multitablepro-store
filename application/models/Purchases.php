@@ -193,8 +193,6 @@ class Purchases extends CI_Model {
 		// remove token (we're not doing this for paypal.. Since you can
 		$this->db->delete('purchase_tokens', array($tokenType => $token));
 
-		// todo: Send email with license
-
 		// Clear user cache (for up-to-date purchases to delete)
 		$this->Apcu->delete('get_user_product_purchases-'.$purchase->user);
 
