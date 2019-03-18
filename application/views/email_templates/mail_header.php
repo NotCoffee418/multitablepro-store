@@ -94,6 +94,6 @@
 <body class="bg-secondary text-light pt-3 pb-3">
 <div class="container bg-light p-3">
 	<div class="text-center pb-3">
-		<img  style="background:red; width:150px; height:150px;">
+		<img src="<?php echo site_url('/img/mtp-logo-150.png'); /* Use the PNG - webp breaks */ ?>" alt="MultiTable Pro Logo">
 	</div>
 

@@ -2,8 +2,7 @@
 <div class="mtp-home-landing-tile">
 	<div class="align-middle">
 		<div class="text-center">
-			<h1 class="text-light">MultiTable Pro</h1>
-			<img class="m-3" style="background:#fff; width:320px; height:320px;">
+			<img class="m-3 img-fluid" src="/img/mtp-logo-320.webp" alt="Multi Table Pro - The Ultimate Multitabling tool.">
 			<p class="lead text-light mt-1">The ULTIMATE Multi-Tabling Tool!</p>
 		</div>
 
