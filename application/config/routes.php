@@ -57,6 +57,9 @@ $route['translate_uri_dashes'] = FALSE;
 $route['eula'] = "home/eula";
 $route['privacy-policy'] = "home/privacy_policy";
 
+// Sitemap
+$route['sitemap.xml'] = "sitemap/index";
+
 // modals
 $route['modals/(:any)'] = "modals/$1";
 

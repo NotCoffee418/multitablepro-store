@@ -74,4 +74,10 @@ class Products extends CI_Model {
 		}
 		return $result;
 	}
+
+	public function list_product_groups() {
+		$this->db->select('*');
+		$this->db->from('product_groups');
+		return $this->db->get()->result();
+	}
 }
