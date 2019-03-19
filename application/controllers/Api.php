@@ -65,6 +65,12 @@ class Api extends CI_Controller {
 		$this->display_json($data);
 	}
 
+	public function get_changelog_html($pGroupShort, $branch, $userVersion) {
+		$this->load->model("Versions");
+		$data["data"] = $this->Versions->get_changelog_data($pGroupShort, $branch, $userVersion);
+		$this->load->view('api/changelog_html', $data);
+	}
+
 	private function display_json($data) {
 		$this->output->set_content_type('application/json');
 		$this->output->set_output(json_encode($data));
