@@ -25,7 +25,17 @@ class Versions extends CI_Model {
 				$this->db->from("version_info");
 				$this->db->join("product_groups", "product_groups.id = version_info.product_group");
 				$this->db->where("product_groups.short_name", $productGroupShort);
+
+				// Also include  more stable branches
 				$this->db->where("version_info.branch", $branch);
+				if ($branch = strtolower('internal')) {
+					$this->db->or_where("version_info.branch", 'BETA');
+					$this->db->or_where("version_info.branch", 'RELEASE');
+				}
+				else if ($branch = strtolower('beta')) {
+					$this->db->or_where("version_info.branch", 'RELEASE');
+				}
+
 				$this->db->order_by("version_info.id", "desc");
 				$row = $this->db->get()->row();
 				if ($row == null) // non-existent version
@@ -48,9 +58,18 @@ class Versions extends CI_Model {
 			$this->db->select("product_groups.short_name as product_group_short_name");
 			$this->db->from("version_info");
 			$this->db->join("product_groups", "product_groups.id = version_info.product_group");
-			$this->db->where("version_info.branch", $branch);
 			$this->db->where("product_groups.short_name", $productGroupShort);
 			$this->db->where("version_info.version", $version);
+
+			// Also include more stable branches
+			$this->db->where("version_info.branch", $branch);
+			if ($branch = strtolower('internal')) {
+				$this->db->or_where("version_info.branch", 'BETA');
+				$this->db->or_where("version_info.branch", 'RELEASE');
+			}
+			else if ($branch = strtolower('beta')) {
+				$this->db->or_where("version_info.branch", 'RELEASE');
+			}
 			$versionInfo["requested_version"] = $this->db->get()->row();
 
 			// Get info about older version as well

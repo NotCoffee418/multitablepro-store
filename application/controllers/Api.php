@@ -37,6 +37,20 @@ class Api extends CI_Controller {
 		$this->display_json($data);
 	}
 
+	public function get_latest_version($productGroupShort = null, $branch = null) {
+		$data = $this->get_output_template();
+		if (!isset($productGroupShort) || !isset($branch)) {
+			$data["errors"][] = "Missing params. Should be called like so: /api/get_latest_version/product-group-short/release";
+		}
+		else {
+			$this->load->model("Versions");
+			$data['result'] = $this->Versions->get_version_info($productGroupShort, $branch, "latest");
+			if ($data['result'] == null)
+				$data["errors"][] = "There were no published versions in this branch.";
+		}
+		$this->display_json($data);
+	}
+
 	public function publish_new_version() {
 		$data = $this->get_output_template();
 		if ($this->input->post("access_token") !== $this->SiteSettings->get("api_admin_token")) {
