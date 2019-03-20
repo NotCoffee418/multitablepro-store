@@ -92,6 +92,18 @@
 		echo form_password($data);
 		?>
 		</div>
+		<div class="custom-control custom-checkbox">
+			<?php
+			$data = array(
+				'class' => 'custom-control-input',
+				'name' => 'accepteula',
+				'id' => 'accepteula',
+			);
+			echo form_checkbox($data);
+			?>
+			<label class="custom-control-label" for="accepteula">I have read and accept the <a href="/eula">EULA</a></label>
+		</div>
+
 		<?php
 
 		// Captcha HTML
@@ -106,7 +118,7 @@
 		// Submit button
 		$data = array(
 			'id' => 'submit',
-			'class' => 'btn btn-success',
+			'class' => 'btn btn-success mt-4',
 			'disabled' => 'disabled', // renabled when captcha gets a reply
 		);
 		echo form_submit('submit', 'Create account', $data);

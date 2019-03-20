@@ -42,6 +42,7 @@ class User extends CI_Controller {
 		$this->form_validation->set_rules('password', 'Password', 'required|min_length[5]|max_length[64]');
 		$this->form_validation->set_rules('passconf', 'Password Confirmation', 'required|matches[password]');
 		$this->form_validation->set_rules('action', 'Captcha', 'callback_valid_captcha');
+		$this->form_validation->set_rules('accepteula', 'EULA', 'callback_eula_accepted');
 
 		// Form is valid
 		if ($this->form_validation->run() === true){
@@ -179,5 +180,10 @@ class User extends CI_Controller {
 			$this->form_validation->set_message('valid_login', 'Could not log in with the specified email or password.');
 			return false;
 		}
+	}
+
+	function eula_accepted($eulaAccepted) {
+		$this->form_validation->set_message('eula_accepted', 'You must read and agree to the EULA to create an account.');
+		 return isset($eulaAccepted);
 	}
 }
