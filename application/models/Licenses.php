@@ -243,6 +243,7 @@ class Licenses extends CI_Model {
 		$this->load->model('Products');
 		$this->db->select('licenses.expires_at > CURRENT_TIMESTAMP() AS is_valid'); // 0 or 1 -
 		$this->db->select('licenses.expires_at as expires_at');
+		$this->db->select('products.id as product_id');
 		$this->db->select('products.name as product_name');
 		$this->db->select('products.description as product_description');
 		$this->db->select('users.first_name as first_name');
