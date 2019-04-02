@@ -241,7 +241,7 @@ class Licenses extends CI_Model {
 	public function validate_license($licenseKey, $productGroupId) {
 		// Get info
 		$this->load->model('Products');
-		$this->db->select('licenses.expires_at > CURRENT_TIMESTAMP() AS is_valid'); // 0 or 1 -
+		$this->db->select('licenses.expires_at > CURRENT_TIMESTAMP() || licenses.expires_at IS NULL AS is_valid'); // 0 or 1 -
 		$this->db->select('licenses.expires_at as expires_at');
 		$this->db->select('products.id as product_id');
 		$this->db->select('products.name as product_name');
