@@ -269,7 +269,7 @@ class Licenses extends CI_Model {
 
 		// Return results
 		return array(
-			'is_valid' => $r->is_valid,
+			'is_valid' => $r->is_valid ? true : false,
 			'expires_at' => $r->expires_at,
 			'product_name' => $r->product_name,
 			'product_description' => $r->product_description,
