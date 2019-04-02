@@ -225,15 +225,20 @@ class Licenses extends CI_Model {
 		}
 
 		// Get response
-		$this->db->select('expires_at');
-		$this->db->select('expires_at > CURRENT_TIMESTAMP() AS is_valid');
+		$this->db->select('trials.expires_at as expires_at');
+		$this->db->select('trials.expires_at > CURRENT_TIMESTAMP() AS is_valid');
+		$this->db->select("product_groups.full_name as product_name");
 		$this->db->from("trials");
-		$this->db->where('mac_address', $macAddress);
-		$this->db->where('product_group', $productGroupId);
+		$this->db->join("product_groups", "product_groups.id = trials.product_group");
+		$this->db->where('trials.mac_address', $macAddress);
+		$this->db->where('trials.product_group', $productGroupId);
 		$r = $this->db->get()->row();
 		return array(
 			"expires_at" => $r->expires_at,
-			"is_valid" => $r->is_valid == true // since db returns 0 or 1
+			"is_valid" => $r->is_valid == true, // since db returns 0 or 1
+			"license_status_message" => $r->is_valid ? "Active trial" : "Your trial has expired",
+			"product_name" => $r->product_name . " (Trial)",
+			"is_trial" => true,
 		);
 	}
 
