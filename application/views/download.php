@@ -2,6 +2,8 @@
 	<div class="text-center">
 		<?php
 		$lowerCaseBranch = strtolower($versionInfo["requested_version"]->branch);
+		$branchDisplay = $versionInfo["requested_version"]->branch == "RELEASE" ?
+			"" : " (". ucfirst(strtolower($versionInfo["requested_version"]->branch)) .")";
 		$downloadLink = "/download/{$versionInfo["requested_version"]->product_group_short_name}/".
 			"$lowerCaseBranch/{$versionInfo["requested_version"]->version}/setup"
 		?>
@@ -30,7 +32,9 @@
 	<h3 class="mt-5">Older Versions</h3>
 	<?php foreach ($versionInfo["older_versions"] as $versionData):
 		$vDownloadLink = "/download/{$versionInfo["requested_version"]->product_group_short_name}/".
-			"$lowerCaseBranch/{$versionData->version}/setup"
+			"$lowerCaseBranch/{$versionData->version}/setup";
+		$branchDisplay = $versionData->branch == "RELEASE" ?
+			"" : " (". ucfirst(strtolower($versionInfo["requested_version"]->branch)) .")";
 		?>
 
 	<div class="card">

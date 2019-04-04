@@ -76,9 +76,9 @@ class Versions extends CI_Model {
 		$this->db->select("product_groups.full_name as product_group_full_name");
 		$this->db->from("version_info");
 		$this->db->join("product_groups", "product_groups.id = version_info.product_group");
-		$this->db->where("version_info.branch", $branch);
 		$this->db->where("product_groups.short_name", $productGroupShort);
 		$this->db->where("version_info.id <", $version_id);
+		$this->sql_branch_selector($branch);
 		$this->db->order_by("version_info.id", "desc");
 		return $this->db->get()->result();
 	}
@@ -105,7 +105,7 @@ class Versions extends CI_Model {
 		$this->db->join('product_groups', 'product_groups.id = version_info.product_group');
 		$this->db->where('product_groups.short_name', $pGroupShort);
 		$this->db->where('version_info.version', $userVersion);
-		$this->db->where('version_info.branch', $branch);
+		$this->sql_branch_selector($branch);
 		$uVerInfoGet = $this->db->get();
 		if ($uVerInfoGet->num_rows() > 0)
 			$userVersionId = $uVerInfoGet->row()->id;
@@ -129,11 +129,11 @@ class Versions extends CI_Model {
 		// Also include more stable branches
 		$this->db->group_start();
 		$this->db->where("version_info.branch", $branch);
-		if ($branch == strtolower('internal')) {
+		if (strtolower($branch) == 'internal') {
 			$this->db->or_where("version_info.branch", 'BETA');
 			$this->db->or_where("version_info.branch", 'RELEASE');
 		}
-		else if ($branch == strtolower('beta')) {
+		else if (strtolower($branch) == 'beta') {
 			$this->db->or_where("version_info.branch", 'RELEASE');
 		}
 		$this->db->group_end();

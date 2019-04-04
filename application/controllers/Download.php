@@ -50,8 +50,6 @@ class Download extends CI_Controller {
 		}
 
 		$data["page_title"] = "Download " . $versionInfo["requested_version"]->product_group_full_name;
-		$data["branchDisplay"] = $versionInfo["requested_version"]->branch == "RELEASE" ?
-			"" : " (". ucfirst(strtolower($versionInfo["requested_version"]->branch)) .")";
 		$data["versionInfo"] = $versionInfo;
 		$data['user'] = $this->Users->get_current_user();
 		$this->load->view('shared/header', $data);

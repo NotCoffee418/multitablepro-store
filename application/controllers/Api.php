@@ -3,6 +3,16 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Api extends CI_Controller {
 
+	public function test() {
+		$data = $this->get_output_template();
+		$data["result"] = "connected";
+		if ($this->input->post("testParam") != null)
+			$data["result"][] = $this->input->post("testParam");
+
+		// Output
+		$this->display_json($data);
+	}
+
 	public function validate_license() {
 		$macAddr = $this->input->post("macaddr");
 		$licenseKey = $this->input->post("license_key");
