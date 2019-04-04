@@ -137,7 +137,7 @@ class Licenses extends CI_Model {
 			// todo: log this
 
 			// Grab license id we just inserted (BUY)
-			$licenseId = $this->db->get_where('license_key', $license_key)->row()->id;
+			$licenseId = $this->db->get_where('licenses', array("license_key" => $license_key))->row()->id;
 		}
 
 		// UPGRADE - Change product
@@ -151,7 +151,7 @@ class Licenses extends CI_Model {
 			$this->db->update('licenses');
 
 			// Grab license id we just inserted (UPGRADE)
-			$licenseId = $licenseId = $this->db->get_where('license_key', $license_key)->row()->id;
+			$licenseId = $fUserLicenseProduct->license_id;
 		}
 
 		// RENEW - Change expires_at
@@ -171,7 +171,7 @@ class Licenses extends CI_Model {
 			$this->db->update('licenses');
 
 			// Grab license id we just inserted (RENEW)
-			$licenseId = $licenseId = $this->db->get_where('license_key', $license_key)->row()->id;
+			$licenseId = $fUserLicenseProduct->license_id;
 		}
 
 		// Clear user's license cache
